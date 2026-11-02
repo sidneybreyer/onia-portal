@@ -1,0 +1,21 @@
+{
+  "name": "onia-portal",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Portal do programa de talentos da Olimpíada Nacional de IA",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "import": "node src/importer.js"
+  },
+  "engines": {
+    "node": "22.x"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "compression": "^1.7.5",
+    "exceljs": "^4.4.0",
+    "express": "^4.21.2",
+    "pg": "^8.13.1"
+  }
+}
