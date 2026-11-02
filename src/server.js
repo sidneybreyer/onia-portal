@@ -624,7 +624,17 @@ async function boot() {
   }
   const seed = process.env.SEED_XLSX || path.join(__dirname, '..', 'data', 'participantes.xlsx');
   const { c } = await db.one('SELECT count(*)::int AS c FROM participants');
-  if (c === 0 && fs.existsSync(seed)) {
+  const encSeed = path.join(__dirname, '..', 'seed', 'participantes.xlsx.enc');
+  if (c === 0 && process.env.SEED_KEY && fs.existsSync(encSeed)) {
+    // Planilha criptografada no repositório; só abre com a chave guardada nas variáveis do servidor.
+    const blob = fs.readFileSync(encSeed);
+    const d = crypto.createDecipheriv('aes-256-gcm', Buffer.from(process.env.SEED_KEY, 'hex'), blob.subarray(0, 12));
+    d.setAuthTag(blob.subarray(12, 28));
+    const buf = Buffer.concat([d.update(blob.subarray(28)), d.final()]);
+    const r = await importParticipants(db, buf, 'planilha de inscrição');
+    console.log(`Planilha importada: ${r.created} participantes.`);
+    r.issues.forEach(i => console.log('  ' + i));
+  } else if (c === 0 && fs.existsSync(seed)) {
     const r = await importParticipants(db, seed);
     console.log(`Planilha importada: ${r.created} participantes.`);
     r.issues.forEach(i => console.log('  ' + i));
