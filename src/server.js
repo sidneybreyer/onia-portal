@@ -345,7 +345,60 @@ app.post('/meus-dados/senha', requireParticipant(), wrap(async (req, res) => {
 }));
 
 // ---------- Gestão ----------
-app.get('/gestao/entrar', (req, res) => res.send(AV.adminLoginPage({})));
+
+// ---------- Configuração inicial do gestor ----------
+// A chave da planilha criptografada também serve de código único para criar o primeiro gestor.
+// Só o hash dela fica no código; a chave chega pelo link enviado ao responsável pelo programa.
+const ENC_SEED = path.join(__dirname, '..', 'seed', 'participantes.xlsx.enc');
+const SETUP_KEY_SHA256 = '0d035d11c7d0b689776398e0bb5ebfec3da9acd9795a4892058164d85a651796';
+
+function setupKeyOk(key) {
+  const k = String(key || '').trim().toLowerCase();
+  if (!/^[0-9a-f]{64}$/.test(k)) return false;
+  const h = crypto.createHash('sha256').update(k).digest();
+  return crypto.timingSafeEqual(h, Buffer.from(SETUP_KEY_SHA256, 'hex'));
+}
+
+async function importEncryptedSeed(keyHex) {
+  const blob = fs.readFileSync(ENC_SEED);
+  const d = crypto.createDecipheriv('aes-256-gcm', Buffer.from(keyHex, 'hex'), blob.subarray(0, 12));
+  d.setAuthTag(blob.subarray(12, 28));
+  const buf = Buffer.concat([d.update(blob.subarray(28)), d.final()]);
+  const r = await importParticipants(db, buf, 'planilha de inscrição');
+  console.log(`Planilha importada: ${r.created} participantes.`);
+  r.issues.forEach(i => console.log('  ' + i));
+  return r;
+}
+
+app.get('/gestao/configurar', wrap(async (req, res) => {
+  const { n } = await db.one('SELECT count(*)::int AS n FROM admins');
+  if (n > 0) return res.redirect('/gestao/entrar');
+  res.send(AV.adminSetupPage({ email: process.env.ADMIN_EMAIL || '', name: process.env.ADMIN_NAME || '' }));
+}));
+
+app.post('/gestao/configurar', wrap(async (req, res) => {
+  const { n } = await db.one('SELECT count(*)::int AS n FROM admins');
+  if (n > 0) return res.redirect('/gestao/entrar');
+  const v = { email: String(req.body.email || '').trim().toLowerCase(), name: String(req.body.name || '').trim() };
+  const err = e => res.status(400).send(AV.adminSetupPage({ ...v, error: e }));
+  if (ipLimited(req)) return err('Muitas tentativas. Aguarde alguns minutos.');
+  if (!setupKeyOk(req.body.chave)) return err('Este link de configuração não é válido. Abra de novo o link completo que você recebeu.');
+  if (!v.name || !U.EMAIL_RE.test(v.email)) return err('Preencha nome e e-mail.');
+  const senha = String(req.body.nova || '');
+  if (senha.length < 12) return err('A senha precisa ter pelo menos 12 caracteres.');
+  if (senha !== String(req.body.confirma || '')) return err('As duas senhas não são iguais.');
+  const a = await db.one('INSERT INTO admins (email, name, password_hash) VALUES ($1,$2,$3) RETURNING id', [v.email, v.name, await bcrypt.hash(senha, 10)]);
+  const { c } = await db.one('SELECT count(*)::int AS c FROM participants');
+  if (c === 0 && fs.existsSync(ENC_SEED)) await importEncryptedSeed(String(req.body.chave).trim().toLowerCase());
+  await startSession(req, res, 'admin', a.id);
+  res.redirect('/gestao');
+}));
+
+app.get('/gestao/entrar', wrap(async (req, res) => {
+  const { n } = await db.one('SELECT count(*)::int AS n FROM admins');
+  if (n === 0) return res.redirect('/gestao/configurar');
+  res.send(AV.adminLoginPage({}));
+}));
 
 app.post('/gestao/entrar', wrap(async (req, res) => {
   const email = String(req.body.email || '').trim().toLowerCase();
@@ -619,21 +672,13 @@ async function boot() {
       await db.q('INSERT INTO admins (email, name, password_hash) VALUES ($1,$2,$3)', [email, process.env.ADMIN_NAME || 'Gestor', await bcrypt.hash(pw, 10)]);
       console.log(`Gestor criado: ${email}`);
     } else {
-      console.warn('Nenhum gestor. Defina ADMIN_EMAIL e ADMIN_PASSWORD (12+ caracteres).');
+      console.warn('Nenhum gestor ainda. Use o link de configuração em /gestao/configurar.');
     }
   }
   const seed = process.env.SEED_XLSX || path.join(__dirname, '..', 'data', 'participantes.xlsx');
   const { c } = await db.one('SELECT count(*)::int AS c FROM participants');
-  const encSeed = path.join(__dirname, '..', 'seed', 'participantes.xlsx.enc');
-  if (c === 0 && process.env.SEED_KEY && fs.existsSync(encSeed)) {
-    // Planilha criptografada no repositório; só abre com a chave guardada nas variáveis do servidor.
-    const blob = fs.readFileSync(encSeed);
-    const d = crypto.createDecipheriv('aes-256-gcm', Buffer.from(process.env.SEED_KEY, 'hex'), blob.subarray(0, 12));
-    d.setAuthTag(blob.subarray(12, 28));
-    const buf = Buffer.concat([d.update(blob.subarray(28)), d.final()]);
-    const r = await importParticipants(db, buf, 'planilha de inscrição');
-    console.log(`Planilha importada: ${r.created} participantes.`);
-    r.issues.forEach(i => console.log('  ' + i));
+  if (c === 0 && process.env.SEED_KEY && fs.existsSync(ENC_SEED)) {
+    await importEncryptedSeed(process.env.SEED_KEY);
   } else if (c === 0 && fs.existsSync(seed)) {
     const r = await importParticipants(db, seed);
     console.log(`Planilha importada: ${r.created} participantes.`);

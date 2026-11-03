@@ -54,6 +54,28 @@ function adminLoginPage({ error, email }) {
   });
 }
 
+function adminSetupPage({ email, name, error }) {
+  return page({
+    title: 'Configurar gestão',
+    scripts: ['setup.js'],
+    body: html`<main class="login-wrap"><div class="login-card">
+  <div class="brand">${MARK}<span>Talentos ONIA <small>Gestão</small></span></div>
+  <h1>Crie seu acesso de gestor</h1>
+  <p class="muted">Este link funciona uma única vez. Depois dele, a gestão passa a abrir com o seu e-mail e a senha que você escolher aqui. Os participantes da planilha entram no portal no mesmo passo.</p>
+  ${error ? html`<div class="notice error" role="alert"><p>${error}</p></div>` : ''}
+  <form method="post" action="/gestao/configurar" novalidate>
+    <input type="hidden" name="chave" id="chave">
+    <div class="field"><label for="name">Seu nome</label><input id="name" name="name" required value="${name || ''}"></div>
+    <div class="field"><label for="email">E-mail</label><input id="email" name="email" type="email" autocomplete="username" required value="${email || ''}"></div>
+    <div class="field"><label for="nova">Senha</label><span class="help">Pelo menos 12 caracteres.</span><input id="nova" name="nova" type="password" autocomplete="new-password" minlength="12" required></div>
+    <div class="field"><label for="confirma">Repita a senha</label><input id="confirma" name="confirma" type="password" autocomplete="new-password" required></div>
+    <p class="error-text" id="nokey" hidden>Este endereço está incompleto. Abra o link completo que você recebeu.</p>
+    <button class="btn block" type="submit" id="go">Criar acesso e entrar</button>
+  </form>
+</div></main>`,
+  });
+}
+
 function barChart({ title, sub, items, total, hrefFor }) {
   const max = Math.max(1, ...items.map(i => i.n));
   return html`<div class="chart"><h2>${title}</h2>${sub ? html`<p class="sub">${sub}</p>` : html`<p class="sub">${total} participantes</p>`}
@@ -411,4 +433,4 @@ function configPage({ admin, settings, templates, admins, msg, error }) {
   });
 }
 
-module.exports = { importPage, adminLoginPage, dashboardPage, listPage, fichaPage, newParticipantPage, configPage, STAGES, REFERRALS, STATUS_LABEL, EVENT_LABEL, SETTINGS_FIELDS, medalClass, medalShort };
+module.exports = { adminSetupPage, importPage, adminLoginPage, dashboardPage, listPage, fichaPage, newParticipantPage, configPage, STAGES, REFERRALS, STATUS_LABEL, EVENT_LABEL, SETTINGS_FIELDS, medalClass, medalShort };

@@ -19,7 +19,7 @@ DATABASE_URL=postgres://... ADMIN_EMAIL=... ADMIN_NAME="..." ADMIN_PASSWORD=... 
 | Variável | Para quê |
 | --- | --- |
 | `DATABASE_URL` | Conexão com o Postgres. As tabelas são criadas na primeira execução. |
-| `ADMIN_EMAIL`, `ADMIN_NAME`, `ADMIN_PASSWORD` | O primeiro gestor, criado só se ainda não houver nenhum. A senha precisa ter 12 ou mais caracteres. |
+| `ADMIN_EMAIL`, `ADMIN_NAME` | Sugestões para o primeiro gestor. Sem gestor, a gestão abre `/gestao/configurar`, que só aceita o link único com a chave da planilha. `ADMIN_PASSWORD` (12+ caracteres) cria o gestor direto, se preferir. |
 | `NODE_ENV=production` | Ativa cookies seguros e HSTS. |
 | `SEED_KEY` | Chave da planilha criptografada (importação inicial). |
 | `PGSSL=1` | Só se o banco exigir SSL. |
