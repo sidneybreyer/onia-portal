@@ -19,14 +19,13 @@ DATABASE_URL=postgres://... ADMIN_EMAIL=... ADMIN_NAME="..." ADMIN_PASSWORD=... 
 | Variável | Para quê |
 | --- | --- |
 | `DATABASE_URL` | Conexão com o Postgres. As tabelas são criadas na primeira execução. |
-| `ADMIN_EMAIL`, `ADMIN_NAME` | Sugestões para o primeiro gestor. Sem gestor, a gestão abre `/gestao/configurar`, que só aceita o link único com a chave da planilha. `ADMIN_PASSWORD` (12+ caracteres) cria o gestor direto, se preferir. |
+| `ADMIN_EMAIL`, `ADMIN_NAME`, `ADMIN_PASSWORD` | O primeiro gestor, criado na primeira execução se ainda não houver nenhum. A senha precisa ter 12 ou mais caracteres. |
 | `NODE_ENV=production` | Ativa cookies seguros e HSTS. |
-| `SEED_KEY` | Chave da planilha criptografada (importação inicial). |
 | `PGSSL=1` | Só se o banco exigir SSL. |
 
 ## Dados dos participantes
 
-A planilha original **não fica no repositório**. Há só uma cópia criptografada (`seed/participantes.xlsx.enc`), importada automaticamente na primeira execução quando a variável `SEED_KEY` está definida e o banco está vazio. Para importar outras planilhas, use **Gestão > Participantes > Importar planilha**, ou rode `npm run import -- caminho/planilha.xlsx`. Quem já está no portal não é alterado.
+Nenhum dado de participante fica no repositório. Para importar a planilha de inscrição, use **Gestão > Participantes > Importar planilha**, ou rode `npm run import -- caminho/planilha.xlsx`. Quem já está no portal não é alterado.
 
 ## Railway
 

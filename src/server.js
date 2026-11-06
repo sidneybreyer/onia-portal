@@ -350,11 +350,11 @@ app.post('/meus-dados/senha', requireParticipant(), wrap(async (req, res) => {
 // A chave da planilha criptografada também serve de código único para criar o primeiro gestor.
 // Só o hash dela fica no código; a chave chega pelo link enviado ao responsável pelo programa.
 const ENC_SEED = path.join(__dirname, '..', 'seed', 'participantes.xlsx.enc');
-const SETUP_KEY_SHA256 = '0d035d11c7d0b689776398e0bb5ebfec3da9acd9795a4892058164d85a651796';
+const SETUP_KEY_SHA256 = (process.env.SETUP_KEY_SHA256 || '').toLowerCase();
 
 function setupKeyOk(key) {
   const k = String(key || '').trim().toLowerCase();
-  if (!/^[0-9a-f]{64}$/.test(k)) return false;
+  if (!/^[0-9a-f]{64}$/.test(SETUP_KEY_SHA256) || !/^[0-9a-f]{64}$/.test(k)) return false;
   const h = crypto.createHash('sha256').update(k).digest();
   return crypto.timingSafeEqual(h, Buffer.from(SETUP_KEY_SHA256, 'hex'));
 }
