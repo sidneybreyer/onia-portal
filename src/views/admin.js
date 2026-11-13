@@ -399,6 +399,7 @@ function importPage({ admin }) {
 const SETTINGS_FIELDS = [
   ['whatsapp_link', 'Link de convite do grupo de WhatsApp', 'Aparece na tela inicial dos participantes.', 'url'],
   ['deadline', 'Prazo para responder', 'Depois do prazo, quem já enviou não consegue mais editar.', 'date'],
+  ['intensive_dates', 'Datas do intensivo', 'Ex.: de 5 a 23 de janeiro de 2027. Aparece na página Como funciona e no início do portal.', 'text'],
   ['program_contact', 'Contato do programa', 'Ex.: talentos@seudominio.com.br ou WhatsApp da equipe. Aparece para os participantes.', 'text'],
   ['portal_url', 'Endereço do portal', 'Usado nos modelos de e-mail.', 'url'],
   ['org_name', 'Organização responsável', 'Aparece no aviso de privacidade.', 'text'],

@@ -5,7 +5,7 @@
 // Opções que também alimentam o sinal de trilha (ver trackSignal).
 const TRILHA = {
   founder: 'Founder: descobrir um problema, conversar com pessoas e transformar em negócio',
-  developer: 'Developer: construir o produto, entender como funciona e colocar no ar',
+  developer: 'Product Developer: construir o produto, entender como funciona e colocar no ar',
   ambas: 'As duas me atraem na mesma medida',
   nao_sei: 'Ainda não sei',
 };
@@ -121,8 +121,8 @@ const SECTIONS = [
   },
   {
     n: 4,
-    title: 'Founder ou Developer?',
-    intro: 'O intensivo terá duas trilhas. Na Founder, você descobre um problema, conversa com pessoas e transforma isso em um negócio. Na Developer, você constrói o produto com apoio de IA e aprende a colocá-lo no ar com segurança. Esta resposta é um ponto de partida: a escolha é feita depois, em conversa com a equipe.',
+    title: 'Founder ou Product Developer?',
+    intro: 'O intensivo terá duas trilhas. Na Founder, você descobre um problema, conversa com pessoas e transforma isso em um negócio. Na Product Developer, você constrói o produto com apoio de IA e aprende a colocá-lo no ar com segurança. Esta resposta é um ponto de partida: a escolha é feita depois, em conversa com a equipe.',
     fields: [
       {
         key: 'trilha', type: 'radio', required: true,
@@ -348,7 +348,7 @@ function trackSignal(data = {}) {
   const add = (side, points, text) => side.push({ points, text });
 
   if (data.trilha === TRILHA.founder) add(founder, 2, 'Prefere a trilha Founder');
-  if (data.trilha === TRILHA.developer) add(developer, 2, 'Prefere a trilha Developer');
+  if (data.trilha === TRILHA.developer) add(developer, 2, 'Prefere a trilha Product Developer');
   if (data.trilha === TRILHA.ambas) { add(founder, 1, 'Sente atração pelas duas trilhas'); add(developer, 1, 'Sente atração pelas duas trilhas'); }
 
   for (const o of list('papel')) {
