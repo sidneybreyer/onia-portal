@@ -9,6 +9,7 @@ const ExcelJS = require('exceljs');
 
 const db = require('./db');
 const F = require('./form');
+const { NAME, SLUG } = require('./brand');
 const U = require('./util');
 const PV = require('./views/participant');
 const AV = require('./views/admin');
@@ -125,10 +126,10 @@ function ipLimited(req) {
 
 // ---------- Configurações ----------
 const DEFAULT_TEMPLATES = [
-  { key: 'convite', name: 'Convite para o portal', subject: 'Talentos ONIA: queremos conhecer você', body: 'Oi, {nome}!\n\nQueremos conhecer melhor seus interesses e sua experiência para organizar os próximos passos das oportunidades de formação e estágio após a Olimpíada Nacional de IA.\n\nPreparamos um formulário de 12 a 15 minutos no portal do programa. Não precisa ter currículo, portfólio ou experiência profissional. Trabalhos da escola e desafios da olimpíada também contam.\n\nPortal: {portal}\nLogin: este e-mail\nSenha do primeiro acesso: seu WhatsApp com DDD, só os números (ex.: 11987654321). Depois você cria uma senha só sua.\nPrazo: {prazo}\nDúvidas: {contato}\n\nSe você tem menos de 18 anos, converse com seu responsável antes de responder.\n\nSidney e equipe' },
-  { key: 'lembrete', name: 'Lembrete de prazo', subject: 'Talentos ONIA: o formulário fecha em {prazo}', body: 'Oi, {nome}!\n\nO formulário do programa fica aberto até {prazo}. Suas respostas ficam salvas, então você pode continuar de onde parou: {portal}\n\nDúvidas: {contato}\n\nSidney e equipe' },
-  { key: 'conversa', name: 'Agendar conversa', subject: 'Talentos ONIA: vamos conversar?', body: 'Oi, {nome}!\n\nObrigado por responder ao formulário. Queremos marcar uma conversa de 30 minutos para conhecer melhor seus interesses.\n\nAlgum destes horários funciona para você?\n- [horário 1]\n- [horário 2]\n- [horário 3]\n\nSidney e equipe' },
-  { key: 'retorno', name: 'Retorno após a conversa', subject: 'Talentos ONIA: próximos passos', body: 'Oi, {nome}!\n\nObrigado pela conversa. Combinamos o seguinte:\n- [próximo passo]\n\nQualquer dúvida, fale com a gente: {contato}\n\nSidney e equipe' },
+  { key: 'convite', name: 'Convite para o portal', subject: `${NAME}: queremos conhecer você`, body: 'Oi, {nome}!\n\nDepois da Olimpíada Nacional de IA, estamos montando um intensivo de 3 semanas com duas trilhas. Na Founder, você descobre um problema real e testa se ele vira um negócio. Na Developer, você constrói um produto com apoio de IA e aprende a colocá-lo no ar com segurança. Depois do intensivo, os participantes formam grupos para desenvolver projetos próprios, com mentoria. Estágio e pesquisa continuam como caminhos possíveis.\n\nAs vagas são limitadas. O primeiro passo é um formulário de 15 a 20 minutos no portal do programa, para entender qual trilha combina com você. Em dezembro, quem responder participa de uma seleção com desafios curtos, que avaliam empenho e forma de pensar, não experiência prévia. Não precisa ter currículo, portfólio ou experiência profissional, nem saber programar. Trabalhos da escola e desafios da olimpíada também contam.\n\nPortal: {portal}\nLogin: este e-mail\nSenha do primeiro acesso: seu WhatsApp com DDD, só os números (ex.: 11987654321). Em seguida, você confirma sua data de nascimento e cria uma senha só sua.\nPrazo: {prazo}\nDúvidas: {contato}\n\nSe você tem menos de 18 anos, converse com seu responsável antes de responder.\n\nSidney e equipe' },
+  { key: 'lembrete', name: 'Lembrete de prazo', subject: `${NAME}: o formulário fecha em {prazo}`, body: 'Oi, {nome}!\n\nO formulário do programa fica aberto até {prazo}. Suas respostas ficam salvas, então você pode continuar de onde parou: {portal}\n\nDúvidas: {contato}\n\nSidney e equipe' },
+  { key: 'conversa', name: 'Agendar conversa', subject: `${NAME}: vamos conversar?`, body: 'Oi, {nome}!\n\nObrigado por responder ao formulário. Queremos marcar uma conversa de 30 minutos para conhecer melhor seus interesses.\n\nAlgum destes horários funciona para você?\n- [horário 1]\n- [horário 2]\n- [horário 3]\n\nSidney e equipe' },
+  { key: 'retorno', name: 'Retorno após a conversa', subject: `${NAME}: próximos passos`, body: 'Oi, {nome}!\n\nObrigado pela conversa. Combinamos o seguinte:\n- [próximo passo]\n\nQualquer dúvida, fale com a gente: {contato}\n\nSidney e equipe' },
 ];
 
 async function getSettings() {
@@ -236,7 +237,7 @@ app.post('/entrar', wrap(async (req, res) => {
     return fail();
   }
   const first = !p.first_login_at;
-  await db.q(`UPDATE participants SET failed_attempts=0, locked_until=NULL, last_login_at=now(), first_login_at=COALESCE(first_login_at, now()), stage=GREATEST(stage, 2) WHERE id=$1`, [p.id]);
+  await db.q(`UPDATE participants SET failed_attempts=CASE WHEN password_hash IS NULL THEN failed_attempts ELSE 0 END, locked_until=NULL, last_login_at=now(), first_login_at=COALESCE(first_login_at, now()), stage=GREATEST(stage, 2) WHERE id=$1`, [p.id]);
   if (first) await logEvent(p.id, 'primeiro_acesso', 'participante');
   await startSession(req, res, 'participante', p.id);
   res.redirect(p.password_hash ? '/inicio' : '/primeiro-acesso');
@@ -253,13 +254,27 @@ app.post('/primeiro-acesso', requireParticipant({ allowSetup: true }), wrap(asyn
   const p = req.p;
   if (p.password_hash) return res.redirect('/inicio');
   const nova = String(req.body.nova || '');
+  const nascimento = String(req.body.nascimento || '').trim();
   const settings = await getSettings();
-  const err = e => res.status(400).send(PV.firstAccessPage({ p, error: e, settings, isMinor: isMinorP(p) }));
+  const err = e => res.status(400).send(PV.firstAccessPage({ p, error: e, settings, isMinor: isMinorP(p), nascimento }));
+  // O telefone é visível no grupo de WhatsApp. O nascimento confirma que é a própria pessoa.
+  if (!p.birth_date) return err('Não encontramos sua data de nascimento no cadastro. Fale com a equipe do programa para liberar seu acesso.');
+  if (nascimento !== U.isoDate(p.birth_date)) {
+    const fails = p.failed_attempts + 1;
+    const lock = fails >= MAX_FAILS;
+    await db.q('UPDATE participants SET failed_attempts=$2, locked_until=$3 WHERE id=$1', [p.id, lock ? 0 : fails, lock ? new Date(Date.now() + LOCK_MINUTES * 60e3) : null]);
+    if (lock) {
+      await db.q(`DELETE FROM sessions WHERE kind='participante' AND user_id=$1`, [p.id]);
+      res.clearCookie(`${SESSION_COOKIE}_participante`, { path: '/' });
+      return res.status(401).send(PV.loginPage({ error: 'Acesso bloqueado por alguns minutos depois de várias tentativas. Tente de novo em 15 minutos.', email: p.email, settings }));
+    }
+    return err('A data de nascimento não confere com a da sua inscrição. Se você acha que há um erro no cadastro, fale com a equipe.');
+  }
   if (nova.length < 8) return err('A senha precisa ter pelo menos 8 caracteres.');
   if (nova !== String(req.body.confirma || '')) return err('As duas senhas não são iguais.');
   if (U.normalizePhone(nova) === p.phone) return err('Escolha uma senha diferente do seu telefone.');
   if (req.body.ciente !== '1') return err('Confirme que leu o aviso de privacidade.');
-  await db.q('UPDATE participants SET password_hash=$2, privacy_ack_at=now() WHERE id=$1', [p.id, await bcrypt.hash(nova, 10)]);
+  await db.q('UPDATE participants SET password_hash=$2, privacy_ack_at=now(), failed_attempts=0 WHERE id=$1', [p.id, await bcrypt.hash(nova, 10)]);
   await logEvent(p.id, 'senha_criada', 'participante');
   res.redirect('/inicio?msg=bemvindo');
 }));
@@ -432,6 +447,7 @@ async function listRows() {
     const o = p.original || {};
     const corrected = !!o.email && ((o.phone && o.phone !== p.phone) || (o.city && o.city !== p.city) || (o.uf && o.uf !== p.uf) || (o.school && o.school !== p.school) || (o.birth_date && o.birth_date !== U.isoDate(p.birth_date)));
     const apoio = Array.isArray(data.apoio) ? data.apoio : [];
+    const signal = F.trackSignal(data);
     return {
       id: p.id, name: p.name, pref: p.preferred_name || '', email: p.email, phone: p.phone, phoneFmt: U.formatPhone(p.phone),
       phoneOk: U.phoneIsValid(p.phone), age: U.ageOn(p.birth_date), uf: p.uf, city: p.city, school: p.school,
@@ -439,7 +455,8 @@ async function listRows() {
       stage: p.stage, referral: p.referral || '', tags: p.tags || [], active: p.active,
       status, statusRank: STATUS_RANK[status], pct: status === 'nao_acessou' ? 0 : progressOf(p, data).pct,
       caminho: F.SHORT.caminho[data.caminho] || '', programacao: F.SHORT.programacao[data.programacao] || '',
-      horas: F.SHORT.horas[data.horas] || '', computador: F.SHORT.computador[data.computador] || '',
+      horas: F.SHORT.horas[data.horas] || '', horasFerias: F.SHORT.horas_ferias[data.horas_ferias] || '', computador: F.SHORT.computador[data.computador] || '',
+      trilha: signal ? signal.label : '', trilhaRank: signal ? F.TRACK_LABELS.indexOf(signal.label) : null, birthOk: !!p.birth_date,
       flags: {
         computador: data.computador === 'Precisaria de um computador para participar' || apoio.includes('Empréstimo de equipamento'),
         conversa: data.computador === 'Prefiro conversar com a equipe sobre isso' || apoio.includes('Gostaria de conversar em particular sobre uma adaptação ou apoio'),
@@ -493,7 +510,7 @@ app.get('/gestao/p/:id', requireAdmin, wrap(async (req, res) => {
   const fill = s => s.replace(/\{nome\}/g, U.firstName(p)).replace(/\{portal\}/g, settings.portal_url || '[endereço do portal]')
     .replace(/\{prazo\}/g, settings.deadline ? U.brDate(settings.deadline) : '[prazo]').replace(/\{contato\}/g, settings.program_contact || '[contato do programa]');
   const templates = (await getTemplates(settings)).map(t => ({ ...t, subject: fill(t.subject), body: fill(t.body) }));
-  res.send(AV.fichaPage({ admin: req.admin, p, resp, notes, events, isMinor: isMinorP(p), templates, msg: req.query.msg }));
+  res.send(AV.fichaPage({ admin: req.admin, p, resp, notes, events, isMinor: isMinorP(p), templates, msg: req.query.msg, signal: F.trackSignal(resp.data) }));
 }));
 
 app.post('/gestao/p/:id/acompanhamento', requireAdmin, wrap(async (req, res) => {
@@ -553,7 +570,7 @@ app.post('/gestao/p/:id/contato', requireAdmin, wrap(async (req, res) => {
 }));
 
 app.get('/gestao/exportar.xlsx', requireAdmin, wrap(async (req, res) => {
-  const ids = String(req.query.ids || '').split(',').map(Number).filter(Number.isInteger);
+  const ids = String(req.query.ids || '').split(',').map(Number).filter(n => Number.isInteger(n) && n > 0);
   const params = ids.length ? [ids] : [];
   const rows = await db.many(`SELECT p.*, r.data, r.status AS rstatus, r.submitted_at FROM participants p LEFT JOIN responses r ON r.participant_id=p.id
     ${ids.length ? 'WHERE p.id = ANY($1)' : ''} ORDER BY p.name`, params);
@@ -561,7 +578,7 @@ app.get('/gestao/exportar.xlsx', requireAdmin, wrap(async (req, res) => {
   await db.q('INSERT INTO audit (admin_email, action) VALUES ($1,$2)', [req.admin.email, `exportou ${rows.length}`]);
 
   const wb = new ExcelJS.Workbook();
-  wb.creator = 'Talentos ONIA';
+  wb.creator = NAME;
   wb.title = 'Confidencial: dados de participantes';
   const ws = wb.addWorksheet('Participantes (confidencial)', { views: [{ state: 'frozen', xSplit: 1, ySplit: 1 }] });
   const fields = F.ALL_FIELDS;
@@ -571,16 +588,19 @@ app.get('/gestao/exportar.xlsx', requireAdmin, wrap(async (req, res) => {
     { header: 'Nascimento', key: 'birth', width: 12 }, { header: 'Idade', key: 'age', width: 7 },
     { header: 'Cidade', key: 'city', width: 18 }, { header: 'UF', key: 'uf', width: 5 }, { header: 'Escola', key: 'school', width: 34 },
     { header: 'Premiação', key: 'prize', width: 22 }, { header: 'Formulário', key: 'status', width: 16 }, { header: 'Enviado em', key: 'sent', width: 17 },
-    { header: 'Etapa', key: 'stage', width: 22 }, { header: 'Encaminhamento', key: 'referral', width: 15 }, { header: 'Tags', key: 'tags', width: 22 },
+    { header: 'Etapa', key: 'stage', width: 22 }, { header: 'Encaminhamento', key: 'referral', width: 18 }, { header: 'Tags', key: 'tags', width: 22 },
+    { header: 'Sinal de trilha', key: 'signal', width: 14 }, { header: 'Pontos Founder', key: 'signal_f', width: 10 }, { header: 'Pontos Developer', key: 'signal_d', width: 10 },
     ...fields.map(f => ({ header: f.label, key: f.key, width: f.type === 'textarea' ? 60 : 30 })),
   ];
   for (const p of rows) {
     const data = p.data || {};
     const status = !p.first_login_at ? 'nao_acessou' : (p.rstatus || 'nao_iniciado');
+    const signal = F.trackSignal(data);
     ws.addRow({
       name: p.name, pref: p.preferred_name, email: p.email, phone: U.formatPhone(p.phone), birth: U.brDate(p.birth_date), age: U.ageOn(p.birth_date),
       city: p.city, uf: p.uf, school: p.school, prize: p.prize, status: AV.STATUS_LABEL[status], sent: p.submitted_at ? U.brDateTime(p.submitted_at) : '',
       stage: `${p.stage}. ${AV.STAGES[p.stage - 1]}`, referral: p.referral, tags: (p.tags || []).join(', '),
+      signal: signal ? signal.label : '', signal_f: signal ? signal.founder : '', signal_d: signal ? signal.developer : '',
       ...Object.fromEntries(fields.map(f => [f.key, F.displayValue(f, data)])),
     });
   }
@@ -592,7 +612,7 @@ app.get('/gestao/exportar.xlsx', requireAdmin, wrap(async (req, res) => {
   wn.getRow(1).font = { bold: true };
 
   res.set('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-  res.set('Content-Disposition', `attachment; filename="talentos-onia-${U.todayInBrazil()}.xlsx"`);
+  res.set('Content-Disposition', `attachment; filename="${SLUG}-${U.todayInBrazil()}.xlsx"`);
   res.set('Cache-Control', 'no-store');
   await wb.xlsx.write(res);
   res.end();

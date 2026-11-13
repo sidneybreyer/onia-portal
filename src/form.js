@@ -2,6 +2,20 @@
 // Definição única do formulário "Vamos conhecer você".
 // Usada pela tela do participante, pela validação no servidor, pela ficha da gestão e pela exportação.
 
+// Opções que também alimentam o sinal de trilha (ver trackSignal).
+const TRILHA = {
+  founder: 'Founder: descobrir um problema, conversar com pessoas e transformar em negócio',
+  developer: 'Developer: construir o produto, entender como funciona e colocar no ar',
+  ambas: 'As duas me atraem na mesma medida',
+  nao_sei: 'Ainda não sei',
+};
+const PAPEL_FOUNDER = ['Conversar com possíveis usuários para entender o problema', 'Apresentar a ideia e convencer pessoas a testar', 'Fazer as contas: quanto custa, quem pagaria e quanto'];
+const PAPEL_DEVELOPER = ['Construir o produto e fazer funcionar', 'Descobrir por que algo quebrou e deixar mais seguro e rápido', 'Desenhar como as partes do sistema se conectam'];
+const TIME_PROPOR = 'Quero propor uma ideia e formar um grupo';
+const CAMINHO_PROJETO = 'Desenvolver um projeto próprio ou explorar empreendedorismo';
+const ATIVIDADE_PROGRAMAR = 'Programar e construir aplicativos ou agentes de IA';
+const PROGRAMACAO_PROPRIA = ['Já construí algo próprio e consigo explicar como funciona', 'Já mantive ou melhorei um projeto usado por outras pessoas'];
+
 const SECTIONS = [
   {
     n: 1,
@@ -46,14 +60,14 @@ const SECTIONS = [
       {
         key: 'caminho', type: 'radio', required: true,
         label: 'Qual caminho mais interessa a você neste momento?',
-        options: ['Estágio remunerado em um projeto real', 'Formação prática e mentoria antes de um estágio', 'Pesquisa orientada por um mentor ou laboratório', 'Desenvolver um projeto próprio ou explorar empreendedorismo', 'Ainda quero conhecer as possibilidades', 'Outro'],
+        options: ['Estágio remunerado em um projeto real', 'Formação prática e mentoria antes de um estágio', 'Pesquisa orientada por um mentor ou laboratório', CAMINHO_PROJETO, 'Ainda quero conhecer as possibilidades', 'Outro'],
         other: 'Outro',
       },
       {
         key: 'atividades', type: 'checkbox', required: true, maxChoices: 3,
         label: 'Quais atividades você tem mais vontade de experimentar?',
         help: 'Escolha até 3.',
-        options: ['Programar e construir aplicativos ou agentes de IA', 'Analisar dados e trabalhar com modelos de IA', 'Pesquisar matemática, algoritmos ou novas técnicas', 'Entender usuários e desenhar produtos ou experiências', 'Automatizar tarefas e melhorar processos de empresas', 'Trabalhar com robótica, sensores ou sistemas físicos', 'Ainda estou descobrindo', 'Outra'],
+        options: [ATIVIDADE_PROGRAMAR, 'Analisar dados e trabalhar com modelos de IA', 'Pesquisar matemática, algoritmos ou novas técnicas', 'Entender usuários e desenhar produtos ou experiências', 'Automatizar tarefas e melhorar processos de empresas', 'Trabalhar com robótica, sensores ou sistemas físicos', 'Ainda estou descobrindo', 'Outra'],
         exclusive: 'Ainda estou descobrindo', other: 'Outra',
       },
       {
@@ -78,7 +92,7 @@ const SECTIONS = [
       {
         key: 'programacao', type: 'radio', required: true,
         label: 'Qual alternativa melhor descreve sua experiência atual com programação?',
-        options: ['Ainda não programei', 'Já experimentei lógica ou programação visual', 'Já segui tutoriais e fiz pequenas alterações', 'Já construí algo próprio e consigo explicar como funciona', 'Já mantive ou melhorei um projeto usado por outras pessoas'],
+        options: ['Ainda não programei', 'Já experimentei lógica ou programação visual', 'Já segui tutoriais e fiz pequenas alterações', ...PROGRAMACAO_PROPRIA],
       },
       {
         key: 'ja_fez', type: 'checkbox', required: true,
@@ -107,6 +121,43 @@ const SECTIONS = [
   },
   {
     n: 4,
+    title: 'Founder ou Developer?',
+    intro: 'O intensivo terá duas trilhas. Na Founder, você descobre um problema, conversa com pessoas e transforma isso em um negócio. Na Developer, você constrói o produto com apoio de IA e aprende a colocá-lo no ar com segurança. Esta resposta é um ponto de partida: a escolha é feita depois, em conversa com a equipe.',
+    fields: [
+      {
+        key: 'trilha', type: 'radio', required: true,
+        label: 'Qual trilha combina mais com você hoje?',
+        help: 'Não precisa ter experiência em nenhuma das duas.',
+        options: [TRILHA.founder, TRILHA.developer, TRILHA.ambas, TRILHA.nao_sei],
+      },
+      {
+        key: 'papel', type: 'checkbox', required: true, maxChoices: 2,
+        label: 'Seu grupo tem três semanas para tirar uma ideia do papel. Em quais partes você mais gostaria de passar o tempo?',
+        help: 'Escolha até 2.',
+        options: [...PAPEL_FOUNDER.flatMap((f, i) => [f, PAPEL_DEVELOPER[i]]), 'Ainda estou descobrindo'],
+        exclusive: 'Ainda estou descobrindo',
+      },
+      {
+        key: 'ja_fez_negocio', type: 'checkbox', required: true,
+        label: 'Quais destas coisas você já fez?',
+        help: 'Marque todas as que se aplicam. Vale dentro ou fora da escola.',
+        options: ['Vendi um produto ou serviço, mesmo pequeno', 'Organizei um evento, clube, grêmio ou equipe', 'Convenci pessoas a participar de um projeto meu', 'Criei conteúdo ou uma página que outras pessoas acompanham', 'Procurei alguém que eu não conhecia para pedir ajuda ou informação', 'Ainda não fiz essas atividades'],
+        exclusive: 'Ainda não fiz essas atividades',
+      },
+      {
+        key: 'problema', type: 'textarea', required: true, max: 600, open: true,
+        label: 'Que problema da sua escola, da sua cidade ou do seu dia a dia você gostaria de ver resolvido?',
+        help: 'Diga quem sofre com ele e como as pessoas lidam com isso hoje. Não precisa ter a solução.',
+      },
+      {
+        key: 'time', type: 'radio', required: true,
+        label: 'Depois do intensivo, grupos vão desenvolver projetos próprios. Como você se vê nessa etapa?',
+        options: [TIME_PROPOR, 'Quero entrar em um grupo e ajudar a construir', 'Topo qualquer um dos dois', 'Prefiro fazer só o intensivo por enquanto', 'Ainda não sei'],
+      },
+    ],
+  },
+  {
+    n: 5,
     title: 'Raciocínio, aprendizado e colaboração',
     intro: 'Não há respostas certas. Queremos entender como você pensa e aprende.',
     fields: [
@@ -141,7 +192,7 @@ const SECTIONS = [
     ],
   },
   {
-    n: 5,
+    n: 6,
     title: 'Disponibilidade e participação',
     intro: 'Estamos mapeando o que é viável para você, sem prejudicar seus estudos. Mais horas não significa perfil melhor.',
     fields: [
@@ -154,6 +205,12 @@ const SECTIONS = [
         key: 'horas', type: 'radio', required: true,
         label: 'Durante o período de aulas, quantas horas por semana caberiam na sua rotina?',
         options: ['Até 5 horas', 'De 6 a 10 horas', 'De 11 a 15 horas', 'De 16 a 20 horas', 'Ainda preciso avaliar com a escola e/ou meu responsável'],
+      },
+      {
+        key: 'horas_ferias', type: 'radio', required: true,
+        label: 'E durante as férias escolares, quantas horas por semana você teria?',
+        help: 'As datas do intensivo ainda estão sendo definidas. Queremos saber se as férias são uma boa opção para você.',
+        options: ['Até 5 horas', 'De 6 a 10 horas', 'De 11 a 20 horas', 'Mais de 20 horas', 'Não estarei disponível nas férias', 'Ainda preciso avaliar com meu responsável'],
       },
       {
         key: 'horarios', type: 'text', required: true, max: 300,
@@ -190,7 +247,7 @@ const SECTIONS = [
     ],
   },
   {
-    n: 6,
+    n: 7,
     title: 'Para fechar',
     intro: 'Último passo antes de revisar e enviar.',
     fields: [
@@ -280,6 +337,48 @@ function displayValue(f, data) {
   return v || '';
 }
 
+// Sinal de trilha: soma evidências das respostas para apoiar a conversa com o participante.
+// Não é uma decisão. A trilha definida pela equipe fica no campo "Encaminhamento".
+const TRACK_LABELS = ['Founder', 'Developer', 'Híbrido', 'A definir'];
+
+function trackSignal(data = {}) {
+  if (!data.trilha) return null;
+  const list = k => (Array.isArray(data[k]) ? data[k] : []);
+  const founder = [], developer = [];
+  const add = (side, points, text) => side.push({ points, text });
+
+  if (data.trilha === TRILHA.founder) add(founder, 2, 'Prefere a trilha Founder');
+  if (data.trilha === TRILHA.developer) add(developer, 2, 'Prefere a trilha Developer');
+  if (data.trilha === TRILHA.ambas) { add(founder, 1, 'Sente atração pelas duas trilhas'); add(developer, 1, 'Sente atração pelas duas trilhas'); }
+
+  for (const o of list('papel')) {
+    if (PAPEL_FOUNDER.includes(o)) add(founder, 1, `Em um projeto, quer: ${o.toLowerCase()}`);
+    if (PAPEL_DEVELOPER.includes(o)) add(developer, 1, `Em um projeto, quer: ${o.toLowerCase()}`);
+  }
+
+  const evidence = (key, side, what) => {
+    const f = FIELD_BY_KEY[key];
+    const n = list(key).filter(o => o !== f.exclusive && o !== f.other).length;
+    if (n >= 1) add(side, n >= 3 ? 2 : 1, `Já fez ${n} ${n === 1 ? 'atividade' : 'atividades'} de ${what}`);
+  };
+  evidence('ja_fez_negocio', founder, 'negócio ou mobilização');
+  evidence('ja_fez', developer, 'construção de software');
+
+  if (data.caminho === CAMINHO_PROJETO) add(founder, 1, 'Caminho de interesse: projeto próprio ou empreendedorismo');
+  if (data.time === TIME_PROPOR) add(founder, 1, 'Quer propor uma ideia e formar um grupo');
+  if (PROGRAMACAO_PROPRIA.includes(data.programacao)) add(developer, 1, 'Já construiu software próprio e consegue explicar');
+  if (list('atividades').includes(ATIVIDADE_PROGRAMAR)) add(developer, 1, 'Quer programar e construir aplicativos ou agentes de IA');
+
+  const sum = side => side.reduce((a, e) => a + e.points, 0);
+  const f = sum(founder), d = sum(developer);
+  let label;
+  if (f - d >= 2) label = 'Founder';
+  else if (d - f >= 2) label = 'Developer';
+  else if (f + d >= 6) label = 'Híbrido';
+  else label = 'A definir';
+  return { label, founder: f, developer: d, reasons: { founder, developer } };
+}
+
 // Rótulos curtos para filtros e colunas da gestão.
 const SHORT = {
   caminho: {
@@ -304,6 +403,14 @@ const SHORT = {
     'De 16 a 20 horas': '16–20h',
     'Ainda preciso avaliar com a escola e/ou meu responsável': 'a avaliar',
   },
+  horas_ferias: {
+    'Até 5 horas': 'até 5h',
+    'De 6 a 10 horas': '6–10h',
+    'De 11 a 20 horas': '11–20h',
+    'Mais de 20 horas': 'mais de 20h',
+    'Não estarei disponível nas férias': 'indisponível',
+    'Ainda preciso avaliar com meu responsável': 'a avaliar',
+  },
   computador: {
     'Tenho acesso regular a um computador': 'Tem regular',
     'Uso um computador compartilhado ou com tempo limitado': 'Compartilhado',
@@ -313,4 +420,4 @@ const SHORT = {
   },
 };
 
-module.exports = { SECTIONS, PROFILE_FIELDS, ALL_FIELDS, FIELD_BY_KEY, SHORT, visibleFields, isAnswered, sanitizeSection, sectionProgress, missingRequired, displayValue };
+module.exports = { SECTIONS, PROFILE_FIELDS, ALL_FIELDS, FIELD_BY_KEY, SHORT, TRACK_LABELS, trackSignal, visibleFields, isAnswered, sanitizeSection, sectionProgress, missingRequired, displayValue };

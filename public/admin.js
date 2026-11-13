@@ -69,13 +69,16 @@
             break;
           case 'status': if (r.status !== v) return false; break;
           case 'etapa': if (String(r.stage) !== v) return false; break;
+          case 'trilha': if (r.trilha !== v) return false; break;
           case 'caminho': if (r.caminho !== v) return false; break;
           case 'programacao': if (r.programacao !== v) return false; break;
           case 'horas': if (r.horas !== v) return false; break;
+          case 'horasFerias': if (r.horasFerias !== v) return false; break;
           case 'computador': if (r.computador !== v) return false; break;
           case 'tag': if (r.tags.indexOf(v) < 0) return false; break;
           case 'alerta':
             if (v === 'telefone' && r.phoneOk) return false;
+            if (v === 'nascimento' && r.birthOk) return false;
             if (v === 'computador' && !r.flags.computador) return false;
             if (v === 'conversa' && !r.flags.conversa) return false;
             if (v === 'corrigido' && !r.corrected) return false;
@@ -114,7 +117,7 @@
         else th.removeAttribute('aria-sort');
       });
       if (!visible.length) {
-        tbody.innerHTML = '<tr class="empty-row"><td colspan="10">Ninguém com esses filtros. <button class="btn quiet small" type="button" id="clear2">Limpar filtros</button></td></tr>';
+        tbody.innerHTML = '<tr class="empty-row"><td colspan="11">Ninguém com esses filtros. <button class="btn quiet small" type="button" id="clear2">Limpar filtros</button></td></tr>';
         var c2 = document.getElementById('clear2'); if (c2) c2.onclick = clearAll;
       } else {
         tbody.innerHTML = visible.map(function (r) {
@@ -127,8 +130,9 @@
             '<td class="num">' + (r.age == null ? '' : r.age) + '</td>' +
             '<td>' + esc(r.uf) + '<span class="sub">' + esc(r.city) + '</span></td>' +
             '<td><span class="medal ' + r.medalClass + '">' + esc(r.medal) + '</span></td>' +
-            '<td><span class="pill ' + st[1] + '">' + esc(stLabel) + '</span>' + (!r.phoneOk ? '<span class="sub" style="color:var(--danger)">Telefone inválido</span>' : '') + (!r.active ? '<span class="sub">Desativado</span>' : '') + '</td>' +
+            '<td><span class="pill ' + st[1] + '">' + esc(stLabel) + '</span>' + (!r.phoneOk ? '<span class="sub" style="color:var(--danger)">Telefone inválido</span>' : '') + (!r.birthOk ? '<span class="sub" style="color:var(--danger)">Sem nascimento</span>' : '') + (!r.active ? '<span class="sub">Desativado</span>' : '') + '</td>' +
             '<td>' + r.stage + '. ' + esc(stages[r.stage - 1]) + (r.referral ? '<span class="sub">' + esc(r.referral) + '</span>' : '') + '</td>' +
+            '<td>' + (r.trilha ? '<span class="pill ' + (r.trilha === 'A definir' ? '' : 'prog') + '">' + esc(r.trilha) + '</span>' : '') + '</td>' +
             '<td>' + esc(r.caminho) + '</td>' +
             '<td>' + esc(r.programacao) + '</td>' +
             '<td>' + esc(r.horas) + '</td>' +

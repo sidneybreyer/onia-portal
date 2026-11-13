@@ -1,5 +1,9 @@
 'use strict';
-const { Pool } = require('pg');
+const { Pool, types } = require('pg');
+
+// DATE chega como texto AAAA-MM-DD. Convertida para Date, a data de nascimento
+// mudava de dia conforme o fuso horário do servidor.
+types.setTypeParser(types.builtins.DATE, v => v);
 
 const url = process.env.DATABASE_URL;
 if (!url) {

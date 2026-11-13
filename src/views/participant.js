@@ -2,6 +2,7 @@
 const { html, raw } = require('../html');
 const { page, participantShell, notice, MARK } = require('./layout');
 const F = require('../form');
+const { NAME } = require('../brand');
 const { UFS, formatPhone, firstName, brDate, brDateTime, ageOn, isoDate } = require('../util');
 
 const MESSAGES = {
@@ -12,7 +13,7 @@ const MESSAGES = {
 };
 
 function privacyText(s) {
-  return html`<p>Suas respostas serão usadas por ${s.org_name || '[organização responsável]'} para conhecer seu perfil, entrar em contato e organizar oportunidades de formação e estágio neste programa. O acesso é limitado à equipe responsável e aos serviços usados para operar este portal.</p>
+  return html`<p>Suas respostas serão usadas por ${s.org_name || '[organização responsável]'} para conhecer seu perfil, entrar em contato e organizar sua participação neste programa: o intensivo, as trilhas, os grupos de projeto e as oportunidades de estágio e pesquisa. O acesso é limitado à equipe responsável e aos serviços usados para operar este portal.</p>
 <p>Antes de encaminhar seu perfil a uma empresa parceira, explicaremos quem receberá as informações e com qual finalidade. As respostas não serão publicadas nem usadas para divulgar sua imagem.</p>
 <p>Os dados serão mantidos por ${s.retention || '[prazo de retenção]'}, salvo obrigações legais. Para tirar dúvidas ou pedir acesso, correção ou exclusão, fale com ${s.privacy_contact || '[contato de privacidade]'}. Informações sobre equipamentos e apoio servem para planejar condições de participação, não para dar nota ao seu potencial.</p>`;
 }
@@ -21,9 +22,9 @@ function loginPage({ error, email, settings }) {
   return page({
     title: 'Entrar',
     body: html`<main class="login-wrap"><div class="login-card">
-  <div class="brand">${MARK}<span>Talentos ONIA</span></div>
+  <div class="brand">${MARK}<span>${NAME}</span></div>
   <h1>Entre no portal</h1>
-  <p class="muted">Programa de formação e estágio para participantes da 2ª Olimpíada Nacional de IA.</p>
+  <p class="muted">Programa de formação para participantes da 2ª Olimpíada Nacional de IA: um intensivo com duas trilhas, Founder e Developer.</p>
   ${error ? html`<div class="notice error" role="alert"><p>${error}</p></div>` : ''}
   <form method="post" action="/entrar" novalidate>
     <div class="field">
@@ -32,7 +33,7 @@ function loginPage({ error, email, settings }) {
     </div>
     <div class="field">
       <label for="senha">Senha</label>
-      <span class="help" id="senha-help">No primeiro acesso, use o seu WhatsApp com DDD, só os números. Ex.: 11987654321</span>
+      <span class="help" id="senha-help">No primeiro acesso, use o seu WhatsApp com DDD, só os números. Ex.: 11987654321. Em seguida, você confirma sua data de nascimento e cria uma senha.</span>
       <input id="senha" name="senha" type="password" autocomplete="current-password" required aria-describedby="senha-help">
     </div>
     <button class="btn block" type="submit">Entrar</button>
@@ -46,24 +47,29 @@ function forgotPage({ settings }) {
   return page({
     title: 'Esqueci minha senha',
     body: html`<main class="login-wrap"><div class="login-card">
-  <div class="brand">${MARK}<span>Talentos ONIA</span></div>
+  <div class="brand">${MARK}<span>${NAME}</span></div>
   <h1>Esqueceu a senha?</h1>
   <p>Fale com a equipe do programa${settings.program_contact ? html`: <strong>${settings.program_contact}</strong>` : ' pelo grupo de WhatsApp'}.</p>
-  <p class="muted">A equipe redefine o seu acesso. Depois disso, você entra de novo com o seu WhatsApp com DDD e cria uma senha nova.</p>
+  <p class="muted">A equipe redefine o seu acesso. Depois disso, você entra de novo com o seu WhatsApp com DDD, confirma sua data de nascimento e cria uma senha nova.</p>
   <a class="btn secondary block" href="/entrar">Voltar para a entrada</a>
 </div></main>`,
   });
 }
 
-function firstAccessPage({ p, error, settings, isMinor }) {
+function firstAccessPage({ p, error, settings, isMinor, nascimento }) {
   return page({
     title: 'Crie sua senha',
     body: html`<main class="login-wrap"><div class="login-card">
-  <div class="brand">${MARK}<span>Talentos ONIA</span></div>
+  <div class="brand">${MARK}<span>${NAME}</span></div>
   <h1>Olá, ${firstName(p)}. Crie sua senha</h1>
   <p class="muted">Seu telefone fica visível para outros participantes no grupo de WhatsApp. Por isso, a partir de agora você entra com uma senha só sua.</p>
   ${error ? html`<div class="notice error" role="alert"><p>${error}</p></div>` : ''}
   <form method="post" action="/primeiro-acesso" novalidate>
+    <div class="field">
+      <label for="nascimento">Sua data de nascimento</label>
+      <span class="help" id="nasc-help">A mesma que você informou na inscrição. Serve para confirmar que é você.</span>
+      <input id="nascimento" name="nascimento" type="date" required min="1985-01-01" max="2016-12-31" value="${nascimento || ''}" aria-describedby="nasc-help">
+    </div>
     <div class="field">
       <label for="nova">Nova senha</label>
       <span class="help" id="nova-help">Pelo menos 8 caracteres.</span>
@@ -100,7 +106,7 @@ function homePage({ p, resp, progress, settings, msg, isMinor }) {
       <a class="btn" href="${nextHref}">Continuar de onde parei</a>`;
   } else {
     card = html`<h2>Queremos conhecer você</h2>
-      <p class="muted">São 6 partes curtas, cerca de 12 a 15 minutos. Não precisa ter currículo nem experiência profissional. “Ainda não aprendi” é uma resposta válida. Você pode parar e continuar depois.</p>
+      <p class="muted">São ${F.SECTIONS.length} partes curtas, cerca de 15 a 20 minutos. Não precisa ter currículo nem experiência profissional. “Ainda não aprendi” é uma resposta válida. Você pode parar e continuar depois.</p>
       <a class="btn" href="/formulario/1">Começar</a>`;
   }
   const flash = msg && MESSAGES[msg];
@@ -110,7 +116,7 @@ function homePage({ p, resp, progress, settings, msg, isMinor }) {
     body: participantShell(p, 'inicio', html`
   ${notice(flash)}
   <div class="hello"><h1>Olá, ${firstName(p)}</h1>
-    <p class="muted">Você participou da Olimpíada Nacional de IA e demonstrou interesse em oportunidades de aprendizado e estágio.${deadline && !sent ? ` Responda até ${deadline}.` : ''}</p></div>
+    <p class="muted">Você participou da Olimpíada Nacional de IA. Estamos montando um intensivo com duas trilhas, Founder e Developer, e queremos entender qual combina com você.${deadline && !sent ? ` Responda até ${deadline}.` : ''}</p></div>
   <div class="status-card">${card}</div>
   <h2>Partes do formulário</h2>
   <ol class="track">
@@ -122,9 +128,19 @@ function homePage({ p, resp, progress, settings, msg, isMinor }) {
       <span class="dot" aria-hidden="true">${done ? '✓' : s.n}</span>
       <a href="/formulario/${s.n}">${s.title}<span class="meta">${meta}</span></a>
     </li>`; })}
-    <li class="${sent ? 'done' : ''}"><span class="dot" aria-hidden="true">${sent ? '✓' : '7'}</span>
+    <li class="${sent ? 'done' : ''}"><span class="dot" aria-hidden="true">${sent ? '✓' : F.SECTIONS.length + 1}</span>
       <a href="/formulario/revisao">Revisar e enviar<span class="meta">${sent ? 'Enviado' : 'Confira tudo antes de enviar'}</span></a></li>
   </ol>
+  <div class="panel"><h2>Como vai funcionar</h2>
+    <ul class="plain">
+      <li><strong>Intensivo de 3 semanas</strong>, com encontros ao vivo e prática. As datas ainda estão sendo definidas com base nas respostas de vocês.</li>
+      <li><strong>Trilha Founder:</strong> descobrir um problema real, conversar com pessoas e testar se ele vira um negócio.</li>
+      <li><strong>Trilha Developer:</strong> construir um produto com apoio de IA, do zero até colocar no ar com segurança. Não precisa saber programar.</li>
+      <li><strong>Depois do intensivo</strong>, os participantes formam grupos para desenvolver projetos próprios, com mentoria.</li>
+      <li><strong>Estágio e pesquisa</strong> continuam como caminhos possíveis para quem preferir.</li>
+    </ul>
+    <p class="muted small">As vagas do intensivo são limitadas. Depois do formulário, em dezembro, haverá uma seleção com desafios curtos, que avaliam empenho e forma de pensar, não experiência prévia. Condições e datas são confirmadas com cada participante.</p>
+  </div>
   <div class="panel"><h2>Grupo do programa</h2>
     ${settings.whatsapp_link
       ? html`<p class="muted">Os avisos para todos os participantes saem no grupo de WhatsApp.</p><a class="btn secondary" href="${settings.whatsapp_link}" target="_blank" rel="noopener">Entrar no grupo de WhatsApp</a>`

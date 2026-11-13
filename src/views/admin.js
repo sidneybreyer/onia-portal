@@ -2,10 +2,11 @@
 const { html, raw } = require('../html');
 const { page, adminShell, notice, MARK } = require('./layout');
 const F = require('../form');
+const { NAME } = require('../brand');
 const { UFS, formatPhone, brDate, brDateTime, isoDate, ageOn } = require('../util');
 
 const STAGES = ['Importado', 'Acessou o portal', 'Formulário enviado', 'Conversa agendada', 'Conversa feita', 'Encaminhado'];
-const REFERRALS = ['Estágio', 'Formação', 'Pesquisa', 'Comunidade'];
+const REFERRALS = ['Trilha Founder', 'Trilha Developer', 'Estágio', 'Formação', 'Pesquisa', 'Comunidade'];
 const STATUS_LABEL = { nao_acessou: 'Não acessou', nao_iniciado: 'Acessou, não iniciou', em_andamento: 'Em andamento', enviado: 'Enviado' };
 const STATUS_PILL = { nao_acessou: '', nao_iniciado: 'warn', em_andamento: 'prog', enviado: 'ok' };
 
@@ -42,7 +43,7 @@ function adminLoginPage({ error, email }) {
   return page({
     title: 'Gestão',
     body: html`<main class="login-wrap"><div class="login-card">
-  <div class="brand">${MARK}<span>Talentos ONIA <small>Gestão</small></span></div>
+  <div class="brand">${MARK}<span>${NAME} <small>Gestão</small></span></div>
   <h1>Entrar na gestão</h1>
   ${error ? html`<div class="notice error" role="alert"><p>${error}</p></div>` : ''}
   <form method="post" action="/gestao/entrar" novalidate>
@@ -59,7 +60,7 @@ function adminSetupPage({ email, name, error }) {
     title: 'Configurar gestão',
     scripts: ['setup.js'],
     body: html`<main class="login-wrap"><div class="login-card">
-  <div class="brand">${MARK}<span>Talentos ONIA <small>Gestão</small></span></div>
+  <div class="brand">${MARK}<span>${NAME} <small>Gestão</small></span></div>
   <h1>Crie seu acesso de gestor</h1>
   <p class="muted">Este link funciona uma única vez. Depois dele, a gestão passa a abrir com o seu e-mail e a senha que você escolher aqui. Os participantes da planilha entram no portal no mesmo passo.</p>
   ${error ? html`<div class="notice error" role="alert"><p>${error}</p></div>` : ''}
@@ -110,6 +111,7 @@ function dashboardPage({ admin, rows, settings }) {
   const alerts = [
     { label: 'Menores de 16 anos (fora do estágio comum)', n: count(r => r.age !== null && r.age < 16), href: L('idade', 'menor16') },
     { label: 'Telefone inválido (não conseguem entrar)', n: count(r => !r.phoneOk), href: L('alerta', 'telefone') },
+    { label: 'Sem data de nascimento (não conseguem criar a senha)', n: count(r => !r.birthOk), href: L('alerta', 'nascimento') },
     { label: 'Precisam de computador', n: count(r => r.flags.computador), href: L('alerta', 'computador') },
     { label: 'Pediram conversa particular sobre apoio', n: count(r => r.flags.conversa), href: L('alerta', 'conversa') },
     { label: 'Corrigiram dados de cadastro', n: count(r => r.corrected), href: L('alerta', 'corrigido') },
@@ -133,9 +135,11 @@ function dashboardPage({ admin, rows, settings }) {
     ${barChart({ title: 'Premiação', items: medals, total, hrefFor: i => L('medalha', i.value) })}
     ${barChart({ title: 'Idade hoje', items: ages, total, hrefFor: i => L('idade', i.value) })}
     ${barChart({ title: 'Estado', items: group(rows, 'uf'), total, hrefFor: i => L('uf', i.value) })}
+    ${barChart({ title: 'Sinal de trilha', sub: `${answered.filter(r => r.trilha).length} responderam. Calculado a partir das respostas; a decisão é da equipe.`, items: group(answered, 'trilha', F.TRACK_LABELS), hrefFor: i => L('trilha', i.value) })}
     ${barChart({ title: 'Caminho de interesse', sub: `${answered.filter(r => r.caminho).length} responderam`, items: group(answered, 'caminho'), hrefFor: i => L('caminho', i.value) })}
     ${barChart({ title: 'Experiência com programação', sub: `${answered.filter(r => r.programacao).length} responderam`, items: group(answered, 'programacao', Object.values(F.SHORT.programacao)), hrefFor: i => L('programacao', i.value) })}
-    ${barChart({ title: 'Horas por semana', sub: `${answered.filter(r => r.horas).length} responderam`, items: group(answered, 'horas', Object.values(F.SHORT.horas)), hrefFor: i => L('horas', i.value) })}
+    ${barChart({ title: 'Horas por semana nas aulas', sub: `${answered.filter(r => r.horas).length} responderam`, items: group(answered, 'horas', Object.values(F.SHORT.horas)), hrefFor: i => L('horas', i.value) })}
+    ${barChart({ title: 'Horas por semana nas férias', sub: `${answered.filter(r => r.horasFerias).length} responderam`, items: group(answered, 'horasFerias', Object.values(F.SHORT.horas_ferias)), hrefFor: i => L('horasFerias', i.value) })}
     ${barChart({ title: 'Acesso a computador', sub: `${answered.filter(r => r.computador).length} responderam`, items: group(answered, 'computador', Object.values(F.SHORT.computador)), hrefFor: i => L('computador', i.value) })}
   </div>`),
   });
@@ -167,12 +171,14 @@ function listPage({ admin, rows }) {
       ${sel('idade', 'Idade', ['menor16', 'menor18', 'maior18', ...opts('age').map(String)], { menor16: 'Menores de 16', menor18: 'Menores de 18', maior18: '18 ou mais' })}
       ${sel('status', 'Formulário', Object.keys(STATUS_LABEL), STATUS_LABEL)}
       ${sel('etapa', 'Etapa', STAGES.map((_, i) => String(i + 1)), Object.fromEntries(STAGES.map((s, i) => [String(i + 1), `${i + 1}. ${s}`])))}
+      ${sel('trilha', 'Sinal de trilha', F.TRACK_LABELS)}
       ${sel('caminho', 'Caminho', Object.values(F.SHORT.caminho))}
       ${sel('programacao', 'Programação', Object.values(F.SHORT.programacao))}
-      ${sel('horas', 'Horas/semana', Object.values(F.SHORT.horas))}
+      ${sel('horas', 'Horas nas aulas', Object.values(F.SHORT.horas))}
+      ${sel('horasFerias', 'Horas nas férias', Object.values(F.SHORT.horas_ferias))}
       ${sel('computador', 'Computador', Object.values(F.SHORT.computador))}
       ${sel('tag', 'Tag', tags)}
-      ${sel('alerta', 'Alerta', ['telefone', 'computador', 'conversa', 'corrigido'], { telefone: 'Telefone inválido', computador: 'Precisa de computador', conversa: 'Pediu conversa particular', corrigido: 'Corrigiu cadastro' })}
+      ${sel('alerta', 'Alerta', ['telefone', 'nascimento', 'computador', 'conversa', 'corrigido'], { telefone: 'Telefone inválido', nascimento: 'Sem data de nascimento', computador: 'Precisa de computador', conversa: 'Pediu conversa particular', corrigido: 'Corrigiu cadastro' })}
     </div>
     <div class="list-meta">
       <span class="muted" id="count" aria-live="polite"></span>
@@ -195,6 +201,7 @@ function listPage({ admin, rows }) {
           <th data-sort="medalRank"><button type="button">Premiação</button></th>
           <th data-sort="statusRank"><button type="button">Formulário</button></th>
           <th data-sort="stage"><button type="button">Etapa</button></th>
+          <th data-sort="trilhaRank"><button type="button">Trilha</button></th>
           <th data-sort="caminho"><button type="button">Caminho</button></th>
           <th data-sort="programacao"><button type="button">Programação</button></th>
           <th data-sort="horas"><button type="button">Horas</button></th>
@@ -227,14 +234,24 @@ function fieldRows(p) {
   </dl>`;
 }
 
-function fichaPage({ admin, p, resp, notes, events, isMinor, templates, msg }) {
+function signalPanel(signal) {
+  if (!signal) return html`<div class="panel"><h2>Sinal de trilha</h2><p class="muted small">Aparece quando a parte “Founder ou Developer?” for respondida.</p></div>`;
+  const side = (name, points, reasons) => html`<div class="signal-side"><h3>${name} <span class="num">${points}</span></h3>
+    ${reasons.length ? html`<ul>${reasons.map(r => html`<li>${r.text}<span class="muted small"> +${r.points}</span></li>`)}</ul>` : html`<p class="muted small">Nenhuma evidência nas respostas.</p>`}</div>`;
+  return html`<div class="panel"><h2>Sinal de trilha <span class="pill ${signal.label === 'A definir' ? '' : 'prog'}">${signal.label}</span></h2>
+    ${side('Founder', signal.founder, signal.reasons.founder)}
+    ${side('Developer', signal.developer, signal.reasons.developer)}
+    <p class="muted small">Soma de evidências das respostas, para apoiar a conversa. A trilha decidida pela equipe fica em Encaminhamento.</p></div>`;
+}
+
+function fichaPage({ admin, p, resp, notes, events, isMinor, templates, msg, signal }) {
   const data = resp.data || {};
   const status = !p.first_login_at ? 'nao_acessou' : resp.status;
   const wa = p.phone ? `https://wa.me/55${p.phone}` : null;
   const flash = {
     salvo: { type: 'ok', text: 'Alterações salvas.' },
     nota: { type: 'ok', text: 'Nota adicionada.' },
-    acesso: { type: 'ok', text: 'Acesso redefinido. O participante volta a entrar com o WhatsApp com DDD e cria uma senha nova.' },
+    acesso: { type: 'ok', text: 'Acesso redefinido. O participante volta a entrar com o WhatsApp com DDD, confirma o nascimento e cria uma senha nova.' },
     cadastro: { type: 'ok', text: 'Cadastro atualizado.' },
     erro_tel: { type: 'error', text: 'Telefone inválido. Use DDD + número, ex.: (11) 98765-4321.' },
     erro_email: { type: 'error', text: 'E-mail inválido ou já usado por outro participante.' },
@@ -288,6 +305,7 @@ function fichaPage({ admin, p, resp, notes, events, isMinor, templates, msg }) {
       </section>
     </div>
     <aside>
+      ${signalPanel(signal)}
       <div class="panel"><h2>Acompanhamento</h2>
         <form method="post" action="/gestao/p/${p.id}/acompanhamento">
           <div class="field"><label for="stage">Etapa</label>
@@ -315,7 +333,7 @@ function fichaPage({ admin, p, resp, notes, events, isMinor, templates, msg }) {
           ${resp.submitted_at ? html`<dt>Enviou em</dt><dd>${brDateTime(resp.submitted_at)}</dd>` : ''}
         </dl>
         <details class="inline"><summary>Redefinir acesso</summary>
-          <p class="small muted">A senha volta a ser o WhatsApp com DDD. O participante cria uma nova no próximo acesso.</p>
+          <p class="small muted">A senha volta a ser o WhatsApp com DDD. No próximo acesso, o participante confirma o nascimento e cria uma nova.</p>
           <form method="post" action="/gestao/p/${p.id}/redefinir"><button class="btn secondary small" type="submit">Confirmar redefinição</button></form>
         </details>
         <details class="inline"><summary>Editar cadastro</summary>
@@ -352,7 +370,7 @@ function newParticipantPage({ admin, error, v = {} }) {
     <div class="field"><label for="name">Nome completo</label><input id="name" name="name" required value="${v.name || ''}"></div>
     <div class="field"><label for="email">E-mail (login)</label><input id="email" name="email" type="email" required value="${v.email || ''}"></div>
     <div class="field"><label for="phone">WhatsApp com DDD (senha do primeiro acesso)</label><input id="phone" name="phone" type="tel" required value="${v.phone || ''}"></div>
-    <div class="field"><label for="birth_date">Data de nascimento</label><input id="birth_date" name="birth_date" type="date" required value="${v.birth_date || ''}"></div>
+    <div class="field"><label for="birth_date">Data de nascimento (confirmada no primeiro acesso)</label><input id="birth_date" name="birth_date" type="date" required value="${v.birth_date || ''}"></div>
     <div class="field"><label for="city">Cidade</label><input id="city" name="city" required value="${v.city || ''}"></div>
     <div class="field"><label for="uf">UF</label><select id="uf" name="uf">${UFS.map(u => html`<option ${u === v.uf ? raw('selected') : ''}>${u}</option>`)}</select></div>
     <div class="field"><label for="school">Escola</label><input id="school" name="school" required value="${v.school || ''}"></div>
