@@ -2,7 +2,7 @@
   "name": "onia-portal",
   "version": "1.0.0",
   "private": true,
-  "description": "Portal do programa de talentos da Olimpíada Nacional de IA",
+  "description": "Portal do Forja, programa de formação para participantes da Olimpíada Nacional de IA",
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",

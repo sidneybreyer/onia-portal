@@ -1,4 +1,4 @@
-# Portal Talentos ONIA
+# Portal Forja
 
 Portal do programa de formação para participantes da 2ª Olimpíada Nacional de IA: um intensivo com duas trilhas, Founder e Developer.
 
@@ -22,7 +22,7 @@ DATABASE_URL=postgres://... ADMIN_EMAIL=... ADMIN_NAME="..." ADMIN_PASSWORD=... 
 | `ADMIN_EMAIL`, `ADMIN_NAME`, `ADMIN_PASSWORD` | O primeiro gestor, criado na primeira execução se ainda não houver nenhum. A senha precisa ter 12 ou mais caracteres. |
 | `NODE_ENV=production` | Ativa cookies seguros e HSTS. |
 | `PGSSL=1` | Só se o banco exigir SSL. |
-| `PROGRAM_NAME` | Nome do programa nas telas, nos e-mails e na exportação. Sem ela, vale "Talentos ONIA". |
+| `PROGRAM_NAME` | Nome do programa nas telas, nos e-mails e na exportação. Sem ela, vale "Forja". |
 | `ASSET_VERSION` | Mude o valor a cada publicação que altere CSS ou JavaScript, para o navegador não usar a versão antiga. |
 
 ## Sinal de trilha
