@@ -149,7 +149,7 @@ function programPage({ settings, p, portalHost }) {
       <dt>Posso fazer o estágio e também um projeto próprio?</dt><dd>Sim. Uma coisa não exclui a outra. O projeto próprio é aberto a quem quiser, receba ou não o convite de estágio, e pode receber investimento.</dd>
       <dt>Tenho menos de 18 anos.</dt><dd>Converse com seu responsável antes de responder. Para participar do intensivo, ele vai assinar um termo. Para o estágio, a lei exige pelo menos 16 anos.</dd>
       <dt>Quanto tempo leva o formulário?</dt><dd>De 15 a 20 minutos. Escreva de forma simples, com exemplos reais.</dd>
-      <dt>É presencial?</dt><dd>Os encontros são ao vivo. Formato e horários serão confirmados com os selecionados, e o formulário pergunta sua disponibilidade de horários.</dd>
+      <dt>É presencial?</dt><dd>Não. O programa é online, com encontros ao vivo pela internet. Ninguém precisa sair de casa nem mudar de cidade. Os horários serão confirmados com os selecionados, e o formulário pergunta sua disponibilidade.</dd>
       <dt>Posso usar IA para escrever as respostas?</dt><dd>Pode usar para revisar o texto, mas não invente experiências e não cole dados pessoais em ferramentas externas.</dd>
     </dl>
   </section>
@@ -249,7 +249,7 @@ function homePage({ p, resp, progress, settings, msg, isMinor }) {
   </ol>
   <div class="panel"><h2>Como vai funcionar</h2>
     <ul class="plain">
-      <li><strong>Intensivo de 3 semanas em janeiro</strong>${settings.intensive_dates ? ` (${settings.intensive_dates})` : ''}, com encontros ao vivo e prática.</li>
+      <li><strong>Intensivo de 3 semanas em janeiro</strong>${settings.intensive_dates ? ` (${settings.intensive_dates})` : ''}, online, com encontros ao vivo e prática.</li>
       <li><strong>Trilha Founder:</strong> descobrir um problema real, conversar com pessoas e testar se ele vira um negócio.</li>
       <li><strong>Trilha Product Developer:</strong> construir um produto com apoio de IA, do zero até colocar no ar com segurança. Não precisa saber programar.</li>
       <li><strong>Depois do intensivo</strong>, os melhores colocados recebem convite para estágio na ${PARTNERS}. Depois, quem quiser também pode desenvolver um projeto próprio, com possibilidade de investimento.</li>
