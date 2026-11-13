@@ -13,7 +13,7 @@ const MESSAGES = {
 };
 
 function privacyText(s) {
-  return html`<p>Suas respostas serão usadas por ${s.org_name || '[organização responsável]'} para conhecer seu perfil, entrar em contato e organizar sua participação neste programa: o intensivo, as trilhas, os grupos de projeto e as oportunidades de estágio e pesquisa. O acesso é limitado à equipe responsável e aos serviços usados para operar este portal.</p>
+  return html`<p>Suas respostas serão usadas por ${s.org_name || '[organização responsável]'} para conhecer seu perfil, entrar em contato e organizar sua participação neste programa: a seleção, o intensivo, as trilhas, o estágio nas empresas parceiras e os projetos próprios. O acesso é limitado à equipe responsável e aos serviços usados para operar este portal.</p>
 <p>Antes de encaminhar seu perfil a uma empresa parceira, explicaremos quem receberá as informações e com qual finalidade. As respostas não serão publicadas nem usadas para divulgar sua imagem.</p>
 <p>Os dados serão mantidos por ${s.retention || '[prazo de retenção]'}, salvo obrigações legais. Para tirar dúvidas ou pedir acesso, correção ou exclusão, fale com ${s.privacy_contact || '[contato de privacidade]'}. Informações sobre equipamentos e apoio servem para planejar condições de participação, não para dar nota ao seu potencial.</p>`;
 }
