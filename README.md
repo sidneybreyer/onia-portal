@@ -23,7 +23,7 @@ DATABASE_URL=postgres://... ADMIN_EMAIL=... ADMIN_NAME="..." ADMIN_PASSWORD=... 
 | `NODE_ENV=production` | Ativa cookies seguros e HSTS. |
 | `PGSSL=1` | Só se o banco exigir SSL. |
 | `PROGRAM_NAME` | Nome do programa nas telas, nos e-mails e na exportação. Sem ela, vale "Forja". |
-| `ASSET_VERSION` | Mude o valor a cada publicação que altere CSS ou JavaScript, para o navegador não usar a versão antiga. |
+| `ASSET_VERSION` | Opcional. A versão dos arquivos estáticos é calculada sozinha a cada deploy; defina só se quiser forçar um valor. |
 
 ## Sinal de trilha
 

@@ -1,6 +1,18 @@
 'use strict';
+const fs = require('fs');
+const path = require('path');
+const crypto = require('crypto');
 const { html, raw } = require('../html');
 const { NAME } = require('../brand');
+
+// Versão dos arquivos estáticos: muda sozinha a cada deploy que altere CSS ou JavaScript,
+// para o navegador não usar a cópia antiga. ASSET_VERSION, se definida, tem prioridade.
+const PUBLIC_DIR = path.join(__dirname, '..', '..', 'public');
+const ASSET_VERSION = process.env.ASSET_VERSION || (() => {
+  const h = crypto.createHash('sha1');
+  for (const f of fs.readdirSync(PUBLIC_DIR).filter(f => /\.(css|js)$/.test(f)).sort()) h.update(fs.readFileSync(path.join(PUBLIC_DIR, f)));
+  return h.digest('hex').slice(0, 8);
+})();
 
 const MARK = raw(`<svg class="brand-mark" viewBox="0 0 26 26" aria-hidden="true"><rect x="1" y="11" width="7" height="14" rx="1.5" fill="#2448c8" opacity=".45"/><rect x="9.5" y="4" width="7" height="21" rx="1.5" fill="#2448c8"/><rect x="18" y="15" width="7" height="10" rx="1.5" fill="#2448c8" opacity=".7"/></svg>`);
 
@@ -16,13 +28,13 @@ function page({ title, body, bodyClass = '', scripts = [] }) {
 <meta name="robots" content="noindex, nofollow">
 <title>${title ? `${title} | ${NAME}` : NAME}</title>
 <link rel="preload" href="/static/fonts/instrument-sans-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="/static/app.css?v=${process.env.ASSET_VERSION || '1'}">
+<link rel="stylesheet" href="/static/app.css?v=${ASSET_VERSION}">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 26 26'%3E%3Crect x='1' y='11' width='7' height='14' rx='1.5' fill='%232448c8' opacity='.45'/%3E%3Crect x='9.5' y='4' width='7' height='21' rx='1.5' fill='%232448c8'/%3E%3Crect x='18' y='15' width='7' height='10' rx='1.5' fill='%232448c8' opacity='.7'/%3E%3C/svg%3E">
 </head>
 <body class="${bodyClass}">
 ${body}
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
-${scripts.map(s => html`<script src="/static/${s}?v=${process.env.ASSET_VERSION || '1'}" defer></script>`)}
+${scripts.map(s => html`<script src="/static/${s}?v=${ASSET_VERSION}" defer></script>`)}
 </body>
 </html>`;
 }
