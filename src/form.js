@@ -11,7 +11,6 @@ const TRILHA = {
 };
 const PAPEL_FOUNDER = ['Conversar com possíveis usuários para entender o problema', 'Apresentar a ideia e convencer pessoas a testar', 'Fazer as contas: quanto custa, quem pagaria e quanto'];
 const PAPEL_DEVELOPER = ['Construir o produto e fazer funcionar', 'Descobrir por que algo quebrou e deixar mais seguro e rápido', 'Desenhar como as partes do sistema se conectam'];
-const TIME_PROPOR = 'Quero propor uma ideia e formar um grupo';
 const CAMINHO_PROJETO = 'Desenvolver um projeto próprio ou explorar empreendedorismo';
 const ATIVIDADE_PROGRAMAR = 'Programar e construir aplicativos ou agentes de IA';
 const PROGRAMACAO_PROPRIA = ['Já construí algo próprio e consigo explicar como funciona', 'Já mantive ou melhorei um projeto usado por outras pessoas'];
@@ -148,11 +147,6 @@ const SECTIONS = [
         key: 'problema', type: 'textarea', required: true, max: 600, open: true,
         label: 'Que problema da sua escola, da sua cidade ou do seu dia a dia você gostaria de ver resolvido?',
         help: 'Diga quem sofre com ele e como as pessoas lidam com isso hoje. Não precisa ter a solução.',
-      },
-      {
-        key: 'time', type: 'radio', required: true,
-        label: 'Depois do intensivo, grupos vão desenvolver projetos próprios. Como você se vê nessa etapa?',
-        options: [TIME_PROPOR, 'Quero entrar em um grupo e ajudar a construir', 'Topo qualquer um dos dois', 'Prefiro fazer só o intensivo por enquanto', 'Ainda não sei'],
       },
     ],
   },
@@ -365,7 +359,6 @@ function trackSignal(data = {}) {
   evidence('ja_fez', developer, 'construção de software');
 
   if (data.caminho === CAMINHO_PROJETO) add(founder, 1, 'Caminho de interesse: projeto próprio ou empreendedorismo');
-  if (data.time === TIME_PROPOR) add(founder, 1, 'Quer propor uma ideia e formar um grupo');
   if (PROGRAMACAO_PROPRIA.includes(data.programacao)) add(developer, 1, 'Já construiu software próprio e consegue explicar');
   if (list('atividades').includes(ATIVIDADE_PROGRAMAR)) add(developer, 1, 'Quer programar e construir aplicativos ou agentes de IA');
 
