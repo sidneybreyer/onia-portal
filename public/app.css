@@ -332,3 +332,7 @@ details.inline[open] summary { margin-bottom: .75rem; }
 .top nav a.btn, .top nav a.btn:hover { color: #fff; }
 .top nav a.btn { background: var(--accent); }
 .top nav a.btn:hover { background: var(--accent-hover); }
+
+/* Fila de envio pelo WhatsApp */
+#wa-queue tr.sent td { color: var(--muted); }
+#wa-queue tr.sent .btn { background: var(--bg); color: var(--ink); border-color: var(--line-strong); }

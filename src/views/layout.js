@@ -59,6 +59,7 @@ function adminShell(admin, current, content) {
   <nav aria-label="Gestão">
     ${link('/gestao', 'Painel', 'painel')}
     ${link('/gestao/participantes', 'Participantes', 'lista')}
+    ${link('/gestao/whatsapp', 'WhatsApp', 'whatsapp')}
     ${link('/gestao/configuracoes', 'Configurações', 'config')}
     <form method="post" action="/gestao/sair"><button class="btn quiet small" type="submit">Sair</button></form>
   </nav>

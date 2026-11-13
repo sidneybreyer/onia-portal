@@ -126,6 +126,7 @@ function ipLimited(req) {
 
 // ---------- Configurações ----------
 const DEFAULT_TEMPLATES = [
+  { key: 'whatsapp', name: 'Convite pelo WhatsApp', channel: 'whatsapp', subject: '', body: 'Oi, {nome}! Aqui é a Ana Breyer, da equipe da *Forja*. Desculpa a demora para entrar em contato: estávamos organizando o programa com cuidado.\n\nVocê está entre os melhores finalistas da 2ª Olimpíada Nacional de IA e foi convidado(a) para a Forja: um intensivo de 3 semanas em janeiro, com as trilhas *Founder* e *Product Developer*. Os melhores colocados recebem convite para estágio na Arcca, na Nola ou na Aggir Capital.\n\n1️⃣ Entre na comunidade de avisos: {grupo}\n2️⃣ Veja como funciona: {portal}/como-funciona\n3️⃣ Responda o formulário até {prazo} em {portal} (login: seu e-mail da inscrição; senha do primeiro acesso: este WhatsApp com DDD, só os números)\n\nMe responde com um 👍 para eu saber que recebeu!' },
   { key: 'convite', name: 'Convite para o portal', subject: `${NAME}: inscrições abertas para o intensivo`, body: 'Oi, {nome}!\n\nDepois da Olimpíada Nacional de IA, abrimos a Forja: um intensivo de 3 semanas, em janeiro, para transformar um problema real em um produto com inteligência artificial. A primeira semana é com todos juntos. Nas duas seguintes, você segue uma trilha: Founder, para descobrir um problema e testar se ele vira um negócio, ou Product Developer, para construir o produto com apoio de IA e colocá-lo no ar com segurança.\n\nAo final, os melhores colocados recebem convite para estágio na Arcca, na Nola ou na Aggir Capital. Depois, quem quiser também pode desenvolver um projeto próprio, com possibilidade de investimento.\n\nAs vagas são limitadas. O primeiro passo é um formulário de 15 a 20 minutos no portal. Em dezembro, quem responder participa de uma seleção com três desafios curtos, que avaliam empenho e forma de pensar, não experiência prévia. Não precisa saber programar nem ter currículo.\n\nComo funciona, passo a passo: {portal}/como-funciona\n\nPortal: {portal}\nLogin: este e-mail\nSenha do primeiro acesso: seu WhatsApp com DDD, só os números (ex.: 11987654321). Em seguida, você confirma sua data de nascimento e cria uma senha só sua.\nPrazo: {prazo}\nDúvidas: {contato}\n\nSe você tem menos de 18 anos, converse com seu responsável antes de responder.\n\nEquipe Forja' },
   { key: 'lembrete', name: 'Lembrete de prazo', subject: `${NAME}: o formulário fecha em {prazo}`, body: 'Oi, {nome}!\n\nO formulário do programa fica aberto até {prazo}. Suas respostas ficam salvas, então você pode continuar de onde parou: {portal}\n\nDúvidas: {contato}\n\nSidney e equipe' },
   { key: 'conversa', name: 'Agendar conversa', subject: `${NAME}: vamos conversar?`, body: 'Oi, {nome}!\n\nObrigado por responder ao formulário. Queremos marcar uma conversa de 30 minutos para conhecer melhor seus interesses.\n\nAlgum destes horários funciona para você?\n- [horário 1]\n- [horário 2]\n- [horário 3]\n\nSidney e equipe' },
@@ -145,6 +146,15 @@ async function getTemplates(settings) {
     body: s[`tpl_${t.key}_corpo`] ?? t.body,
   }));
 }
+
+// Troca {nome}, {portal}, {prazo}, {contato} e {grupo} pelos dados do participante e das configurações.
+function fillTemplate(s, p, settings) {
+  return s.replace(/\{nome\}/g, U.firstName(p)).replace(/\{portal\}/g, settings.portal_url || '[endereço do portal]')
+    .replace(/\{prazo\}/g, settings.deadline ? U.brDate(settings.deadline) : '[prazo]').replace(/\{contato\}/g, settings.program_contact || '[contato do programa]')
+    .replace(/\{grupo\}/g, settings.whatsapp_link || '[link da comunidade]');
+}
+
+const waLink = (phone, text) => `https://wa.me/55${phone}?text=${encodeURIComponent(text)}`;
 
 function deadlinePassed(settings) {
   return !!settings.deadline && U.todayInBrazil() > settings.deadline;
@@ -512,9 +522,7 @@ app.get('/gestao/p/:id', requireAdmin, wrap(async (req, res) => {
     getSettings(),
   ]);
   await db.q('INSERT INTO audit (admin_email, action, participant_id) VALUES ($1,$2,$3)', [req.admin.email, 'ficha_aberta', p.id]);
-  const fill = s => s.replace(/\{nome\}/g, U.firstName(p)).replace(/\{portal\}/g, settings.portal_url || '[endereço do portal]')
-    .replace(/\{prazo\}/g, settings.deadline ? U.brDate(settings.deadline) : '[prazo]').replace(/\{contato\}/g, settings.program_contact || '[contato do programa]');
-  const templates = (await getTemplates(settings)).map(t => ({ ...t, subject: fill(t.subject), body: fill(t.body) }));
+  const templates = (await getTemplates(settings)).map(t => ({ ...t, subject: fillTemplate(t.subject, p, settings), body: fillTemplate(t.body, p, settings) }));
   res.send(AV.fichaPage({ admin: req.admin, p, resp, notes, events, isMinor: isMinorP(p), templates, msg: req.query.msg, signal: F.trackSignal(resp.data) }));
 }));
 
@@ -564,6 +572,21 @@ app.post('/gestao/p/:id/cadastro', requireAdmin, wrap(async (req, res) => {
     [p.id, t('name'), email, phone, birth, t('city'), uf, t('school'), t('prize')]);
   await logEvent(p.id, 'cadastro_editado', req.admin.name);
   res.redirect(`/gestao/p/${p.id}?msg=cadastro`);
+}));
+
+app.get('/gestao/whatsapp', requireAdmin, wrap(async (req, res) => {
+  const settings = await getSettings();
+  const tpl = (await getTemplates(settings)).find(t => t.key === 'whatsapp');
+  const [rows, sent] = await Promise.all([
+    listRows(),
+    db.many(`SELECT participant_id, max(created_at) AS at FROM events WHERE kind='contato_whatsapp' GROUP BY participant_id`),
+  ]);
+  const sentAt = Object.fromEntries(sent.map(s => [s.participant_id, s.at]));
+  const queue = rows.filter(r => r.active).map(r => ({
+    id: r.id, name: r.name, phoneFmt: r.phoneFmt, status: r.status, sentAt: sentAt[r.id] || null,
+    href: r.phoneOk ? waLink(r.phone, fillTemplate(tpl.body, { name: r.name, preferred_name: r.pref }, settings)) : null,
+  })).sort((a, b) => (!!a.sentAt - !!b.sentAt) || a.name.localeCompare(b.name, 'pt-BR'));
+  res.send(AV.whatsappPage({ admin: req.admin, queue, settings }));
 }));
 
 app.post('/gestao/p/:id/contato', requireAdmin, wrap(async (req, res) => {

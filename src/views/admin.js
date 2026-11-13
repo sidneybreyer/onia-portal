@@ -247,7 +247,8 @@ function signalPanel(signal) {
 function fichaPage({ admin, p, resp, notes, events, isMinor, templates, msg, signal }) {
   const data = resp.data || {};
   const status = !p.first_login_at ? 'nao_acessou' : resp.status;
-  const wa = p.phone ? `https://wa.me/55${p.phone}` : null;
+  const waTpl = templates.find(t => t.channel === 'whatsapp');
+  const wa = p.phone ? `https://wa.me/55${p.phone}${waTpl ? `?text=${encodeURIComponent(waTpl.body)}` : ''}` : null;
   const flash = {
     salvo: { type: 'ok', text: 'Alterações salvas.' },
     nota: { type: 'ok', text: 'Nota adicionada.' },
@@ -279,7 +280,7 @@ function fichaPage({ admin, p, resp, notes, events, isMinor, templates, msg, sig
     <div class="actions">
       <select id="tpl" aria-label="Modelo de e-mail">
         <option value="">E-mail em branco</option>
-        ${templates.map(t => html`<option value="${t.key}">${t.name}</option>`)}
+        ${templates.filter(t => t.channel !== 'whatsapp').map(t => html`<option value="${t.key}">${t.name}</option>`)}
       </select>
       <a class="btn" id="mail" href="mailto:${p.email}" data-log="contato_email">Abrir e-mail</a>
       ${wa ? html`<a class="btn secondary" href="${wa}" target="_blank" rel="noopener" data-log="contato_whatsapp">WhatsApp</a>` : ''}
@@ -396,6 +397,30 @@ function importPage({ admin }) {
   });
 }
 
+function whatsappPage({ admin, queue, settings }) {
+  const done = queue.filter(q => q.sentAt).length;
+  return page({
+    title: 'Envio pelo WhatsApp',
+    scripts: ['admin.js'],
+    body: adminShell(admin, 'whatsapp', html`
+  <h1>Envio pelo WhatsApp</h1>
+  <p class="muted">Cada botão abre a conversa com a mensagem “Convite pelo WhatsApp” já preenchida com o nome. Confira e envie no WhatsApp. O portal não envia nada sozinho. Para evitar bloqueio, mande em lotes de 10 a 15, com alguns minutos entre eles.</p>
+  ${settings.whatsapp_link ? '' : html`<div class="notice warn"><p>O link da comunidade ainda não está nas <a href="/gestao/configuracoes">Configurações</a>. Sem ele, a mensagem sai com “[link da comunidade]”.</p></div>`}
+  ${settings.deadline ? '' : html`<div class="notice warn"><p>O prazo para responder ainda não está nas <a href="/gestao/configuracoes">Configurações</a>.</p></div>`}
+  <p><strong id="wa-count">${done}</strong> de ${queue.length} já abertos. Quem ainda não recebeu aparece primeiro. <a href="/gestao/configuracoes">Editar a mensagem</a></p>
+  <div class="table-wrap"><table class="data" id="wa-queue">
+    <thead><tr><th>Participante</th><th>WhatsApp</th><th>Portal</th><th>Enviado</th><th></th></tr></thead>
+    <tbody>${queue.map(q => html`<tr data-id="${q.id}" class="${q.sentAt ? 'sent' : ''}">
+      <td><a class="name" href="/gestao/p/${q.id}">${q.name}</a></td>
+      <td class="num">${q.phoneFmt || '—'}</td>
+      <td><span class="pill ${STATUS_PILL[q.status]}">${STATUS_LABEL[q.status]}</span></td>
+      <td class="sent-at">${q.sentAt ? brDateTime(q.sentAt) : '—'}</td>
+      <td>${q.href ? html`<a class="btn small" href="${q.href}" target="_blank" rel="noopener" data-wa="${q.id}">${q.sentAt ? 'Abrir de novo' : 'Abrir WhatsApp'}</a>` : html`<span class="muted small">Telefone inválido</span>`}</td>
+    </tr>`)}</tbody>
+  </table></div>`),
+  });
+}
+
 const SETTINGS_FIELDS = [
   ['whatsapp_link', 'Link de convite do grupo de WhatsApp', 'Aparece na tela inicial dos participantes.', 'url'],
   ['deadline', 'Prazo para responder', 'Depois do prazo, quem já enviou não consegue mais editar.', 'date'],
@@ -422,10 +447,10 @@ function configPage({ admin, settings, templates, admins, msg, error }) {
         <input id="s_${k}" name="${k}" type="${type}" value="${settings[k] || ''}"></div>`)}
     </div>
     <h2 style="margin-top:1rem">Modelos de e-mail</h2>
-    <p class="muted">Use {nome}, {portal}, {prazo} e {contato}. O botão “Abrir e-mail” da ficha abre o seu programa de e-mail com o modelo preenchido. Nada é enviado pelo portal.</p>
+    <p class="muted">Use {nome}, {portal}, {prazo}, {contato} e {grupo} (link da comunidade do WhatsApp). O botão “Abrir e-mail” da ficha abre o seu programa de e-mail com o modelo preenchido. Nada é enviado pelo portal.</p>
     <div class="cfg-grid">
       ${templates.map(t => html`<div class="panel"><h3>${t.name}</h3>
-        <div class="field"><label for="t_${t.key}_s">Assunto</label><input id="t_${t.key}_s" name="tpl_${t.key}_assunto" value="${t.subject}"></div>
+        ${t.channel === 'whatsapp' ? '' : html`<div class="field"><label for="t_${t.key}_s">Assunto</label><input id="t_${t.key}_s" name="tpl_${t.key}_assunto" value="${t.subject}"></div>`}
         <div class="field"><label for="t_${t.key}_b">Texto</label><textarea id="t_${t.key}_b" name="tpl_${t.key}_corpo" style="min-height:200px">${t.body}</textarea></div></div>`)}
     </div>
     <button class="btn" type="submit">Salvar configurações</button>
@@ -452,4 +477,4 @@ function configPage({ admin, settings, templates, admins, msg, error }) {
   });
 }
 
-module.exports = { adminSetupPage, importPage, adminLoginPage, dashboardPage, listPage, fichaPage, newParticipantPage, configPage, STAGES, REFERRALS, STATUS_LABEL, EVENT_LABEL, SETTINGS_FIELDS, medalClass, medalShort };
+module.exports = { whatsappPage, adminSetupPage, importPage, adminLoginPage, dashboardPage, listPage, fichaPage, newParticipantPage, configPage, STAGES, REFERRALS, STATUS_LABEL, EVENT_LABEL, SETTINGS_FIELDS, medalClass, medalShort };

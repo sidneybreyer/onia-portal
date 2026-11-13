@@ -269,4 +269,21 @@
       if (e.key === 'ArrowRight') { var n = document.getElementById('next'); if (!n.hidden) location.href = n.href; }
     });
   }
+
+  // Fila de envio pelo WhatsApp: registra a abertura e marca a linha como enviada
+  var waTable = document.getElementById('wa-queue');
+  if (waTable) {
+    waTable.addEventListener('click', function (e) {
+      var a = e.target.closest('[data-wa]');
+      if (!a) return;
+      var tr = a.closest('tr');
+      fetch('/gestao/p/' + a.getAttribute('data-wa') + '/contato', { method: 'POST', body: new URLSearchParams({ kind: 'contato_whatsapp', tpl: 'Convite pelo WhatsApp' }), credentials: 'same-origin', keepalive: true });
+      if (!tr.classList.contains('sent')) {
+        tr.classList.add('sent');
+        var c = document.getElementById('wa-count'); c.textContent = Number(c.textContent) + 1;
+      }
+      tr.querySelector('.sent-at').textContent = 'agora';
+      a.textContent = 'Abrir de novo';
+    });
+  }
 })();
