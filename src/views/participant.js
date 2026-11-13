@@ -63,15 +63,15 @@ function programPage({ settings, p, portalHost }) {
 <main class="narrow prog">
   <div class="hello"><h1>Como funciona a ${NAME}</h1>
     <p>A ${NAME} é um programa de formação para os melhores finalistas da 2ª Olimpíada Nacional de IA. Em um intensivo de 3 semanas, você aprende a transformar um problema real em um produto com inteligência artificial. A primeira semana é com todos juntos. Nas duas seguintes, cada participante segue uma trilha: Founder ou Product Developer.</p>
-    <p>Ao final, os melhores colocados recebem convite para estágio na ${PARTNERS}. Quem preferir pode seguir com um projeto próprio.</p>
+    <p>Ao final, os melhores colocados recebem convite para estágio na ${PARTNERS}. Depois, quem quiser também pode desenvolver um projeto próprio, com possibilidade de investimento.</p>
     <p class="muted">Não precisa saber programar, ter currículo nem experiência profissional. As vagas são limitadas, e a seleção avalia empenho e forma de pensar, não o que você já sabe.</p></div>
 
   <h2>Etapas</h2>
   <ol class="track">
     ${step(1, 'Formulário', deadline ? `Agora, até ${deadline}` : 'Agora', 'Você entra no portal e responde um questionário de 15 a 20 minutos sobre seus interesses e sua experiência.')}
     ${step(2, 'Seleção', 'Dezembro', 'Três desafios curtos, um por semana, com no máximo 5 horas no total: um de Founder, um de Product Developer e um em dupla.')}
-    ${step(3, 'Intensivo', settings.intensive_dates ? `3 semanas, ${settings.intensive_dates}` : '3 semanas', 'Semana 1 com todos juntos. Semanas 2 e 3 na sua trilha, Founder ou Product Developer.')}
-    ${step(4, 'Depois do intensivo', 'Estágio ou projeto próprio', `Ao final, os melhores colocados recebem convite para estágio na ${PARTNERS}. Quem preferir pode seguir com um projeto próprio.`)}
+    ${step(3, 'Intensivo', `Janeiro, 3 semanas${settings.intensive_dates ? ` (${settings.intensive_dates})` : ''}`, 'Semana 1 com todos juntos. Semanas 2 e 3 na sua trilha, Founder ou Product Developer.')}
+    ${step(4, 'Depois do intensivo', 'Estágio e projeto próprio', `Ao final, os melhores colocados recebem convite para estágio na ${PARTNERS}. Depois, quem quiser também pode desenvolver um projeto próprio, com possibilidade de investimento.`)}
   </ol>
 
   <section>
@@ -106,11 +106,11 @@ function programPage({ settings, p, portalHost }) {
   </section>
 
   <section>
-    <h2>Depois do intensivo: estágio ou projeto próprio</h2>
+    <h2>Depois do intensivo: estágio e projeto próprio</h2>
     <div class="panel"><h3>Estágio em uma empresa parceira</h3>
       <p>Ao final do intensivo, os melhores colocados recebem convite para estágio na ${PARTNERS}. A classificação considera as entregas das três semanas, e a empresa leva em conta a trilha e o interesse de cada um.</p></div>
     <div class="panel"><h3>Projeto próprio</h3>
-      <p>Quem preferir pode, em vez do estágio, desenvolver um projeto próprio.</p></div>
+      <p>Depois do intensivo, quem quiser também pode desenvolver um projeto próprio. Os projetos com mais potencial podem receber investimento.</p></div>
     <p class="muted small">O estágio segue a Lei do Estágio (Lei nº 11.788/2008): é preciso ter pelo menos 16 anos, estar matriculado na escola e assinar um termo de compromisso com a escola e, para menores de 18 anos, com o responsável. Carga horária e demais condições são combinadas com cada empresa.</p>
   </section>
 
@@ -146,7 +146,7 @@ function programPage({ settings, p, portalHost }) {
     <dl class="faq">
       <dt>Preciso saber programar?</dt><dd>Não. A trilha Product Developer começa do zero, e a trilha Founder não exige código.</dd>
       <dt>O formulário elimina alguém?</dt><dd>Não. Ele serve para conhecer você e planejar. A seleção acontece em dezembro, com os desafios.</dd>
-      <dt>Posso escolher entre o estágio e o projeto próprio?</dt><dd>Sim. Quem receber o convite de estágio pode preferir o projeto próprio, e quem não receber pode seguir com o projeto.</dd>
+      <dt>Posso fazer o estágio e também um projeto próprio?</dt><dd>Sim. Uma coisa não exclui a outra. O projeto próprio é aberto a quem quiser, receba ou não o convite de estágio, e pode receber investimento.</dd>
       <dt>Tenho menos de 18 anos.</dt><dd>Converse com seu responsável antes de responder. Para participar do intensivo, ele vai assinar um termo. Para o estágio, a lei exige pelo menos 16 anos.</dd>
       <dt>Quanto tempo leva o formulário?</dt><dd>De 15 a 20 minutos. Escreva de forma simples, com exemplos reais.</dd>
       <dt>É presencial?</dt><dd>Os encontros são ao vivo. Formato e horários serão definidos depois das respostas, e o formulário pergunta o que é viável para você.</dd>
@@ -249,10 +249,10 @@ function homePage({ p, resp, progress, settings, msg, isMinor }) {
   </ol>
   <div class="panel"><h2>Como vai funcionar</h2>
     <ul class="plain">
-      <li><strong>Intensivo de 3 semanas</strong>${settings.intensive_dates ? `, ${settings.intensive_dates}` : ''}, com encontros ao vivo e prática.</li>
+      <li><strong>Intensivo de 3 semanas em janeiro</strong>${settings.intensive_dates ? ` (${settings.intensive_dates})` : ''}, com encontros ao vivo e prática.</li>
       <li><strong>Trilha Founder:</strong> descobrir um problema real, conversar com pessoas e testar se ele vira um negócio.</li>
       <li><strong>Trilha Product Developer:</strong> construir um produto com apoio de IA, do zero até colocar no ar com segurança. Não precisa saber programar.</li>
-      <li><strong>Depois do intensivo</strong>, os melhores colocados recebem convite para estágio na ${PARTNERS}. Quem preferir pode seguir com um projeto próprio.</li>
+      <li><strong>Depois do intensivo</strong>, os melhores colocados recebem convite para estágio na ${PARTNERS}. Depois, quem quiser também pode desenvolver um projeto próprio, com possibilidade de investimento.</li>
     </ul>
     <p class="muted small">As vagas do intensivo são limitadas. Depois do formulário, em dezembro, haverá uma seleção com desafios curtos, que avaliam empenho e forma de pensar, não experiência prévia. Condições e datas são confirmadas com cada participante.</p>
     <a class="btn secondary" href="/como-funciona">Ver como funciona, passo a passo</a>
