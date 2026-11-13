@@ -317,3 +317,18 @@ details.inline[open] summary { margin-bottom: .75rem; }
 .signal-side h3 { font-size: .95rem; margin: 0 0 .25rem; display: flex; justify-content: space-between; }
 .signal-side ul { margin: 0; padding-left: 1.1rem; font-size: .9rem; }
 .signal-side li { margin-bottom: .2rem; }
+
+/* Página "Como funciona" */
+.prog section { margin: 0 0 2rem; }
+.prog section > ul, .prog .steps { padding-left: 1.2rem; }
+.prog section li, .prog .steps li { margin-bottom: .5rem; }
+.prog .track li { padding-bottom: .9rem; }
+.prog .step-title { display: block; font-weight: 600; padding-top: .15rem; }
+.prog .step-text { margin: .25rem 0 0; color: var(--muted); font-size: .95rem; }
+.prog .panel h3 { font-size: 1rem; margin-bottom: .35rem; }
+.faq { margin: 0; }
+.faq dt { font-weight: 600; margin-top: 1rem; }
+.faq dd { margin: .25rem 0 0; color: var(--muted); }
+.top nav a.btn, .top nav a.btn:hover { color: #fff; }
+.top nav a.btn { background: var(--accent); }
+.top nav a.btn:hover { background: var(--accent-hover); }

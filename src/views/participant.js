@@ -39,7 +39,123 @@ function loginPage({ error, email, settings }) {
     <button class="btn block" type="submit">Entrar</button>
   </form>
   <p class="small" style="margin-top:1.25rem"><a href="/esqueci">Esqueci minha senha</a></p>
+  <p class="small"><a href="/como-funciona">Como funciona o programa e como acessar</a></p>
 </div></main>`,
+  });
+}
+
+const PARTNERS = 'Arcca, Nola ou Aggir Capital';
+
+// Página pública: explica o programa e o passo a passo de acesso. Abre sem login,
+// para poder ser enviada por e-mail e lida também pelos responsáveis.
+function programPage({ settings, p, portalHost }) {
+  const deadline = settings.deadline ? brDate(settings.deadline) : null;
+  const header = p
+    ? html`<header class="top"><a class="brand" href="/inicio">${MARK}<span>${NAME}</span></a>
+  <nav aria-label="Principal"><a href="/inicio">Voltar ao início</a></nav></header>`
+    : html`<header class="top"><a class="brand" href="/entrar">${MARK}<span>${NAME}</span></a>
+  <nav aria-label="Principal"><a class="btn small" href="/entrar">Entrar no portal</a></nav></header>`;
+  const step = (n, title, when, text) => html`<li><span class="dot" aria-hidden="true">${n}</span>
+    <span class="step-title">${title}<span class="meta">${when}</span></span><p class="step-text">${text}</p></li>`;
+  return page({
+    title: 'Como funciona',
+    body: html`${header}
+<main class="narrow prog">
+  <div class="hello"><h1>Como funciona a ${NAME}</h1>
+    <p>A ${NAME} é um programa de formação para quem participou da 2ª Olimpíada Nacional de IA. Em um intensivo de 3 semanas, você aprende a transformar um problema real em um produto com inteligência artificial. A primeira semana é com todos juntos. Nas duas seguintes, cada participante segue uma trilha: Founder ou Developer.</p>
+    <p>Ao final, quem mais se destacar recebe convite para um estágio na ${PARTNERS}. Quem preferir pode seguir com um projeto próprio, em grupo e com mentoria.</p>
+    <p class="muted">Não precisa saber programar, ter currículo nem experiência profissional. As vagas são limitadas, e a seleção avalia empenho e forma de pensar, não o que você já sabe.</p></div>
+
+  <h2>Etapas</h2>
+  <ol class="track">
+    ${step(1, 'Formulário', deadline ? `Agora, até ${deadline}` : 'Agora', 'Você entra no portal e responde um questionário de 15 a 20 minutos sobre seus interesses e sua experiência.')}
+    ${step(2, 'Seleção', 'Dezembro', 'Três desafios curtos, um por semana, com no máximo 5 horas no total: um de Founder, um de Developer e um em dupla.')}
+    ${step(3, 'Intensivo', '3 semanas, datas a confirmar', 'Semana 1 com todos juntos. Semanas 2 e 3 na sua trilha, Founder ou Developer.')}
+    ${step(4, 'Depois do intensivo', 'Estágio ou projeto próprio', `Estágio na ${PARTNERS} para quem se destacar, ou um projeto próprio em grupo, com mentoria.`)}
+  </ol>
+
+  <section>
+    <h2>Semana 1: todos juntos</h2>
+    <p>Na primeira semana ninguém escolhe trilha ainda. Todo mundo pratica as duas coisas que o programa inteiro exige:</p>
+    <ul>
+      <li>Conversar com pessoas de verdade sobre um problema real, sem oferecer solução, para entender o que elas vivem.</li>
+      <li>Colocar uma primeira página no ar com ajuda de IA, mesmo sem nunca ter programado.</li>
+    </ul>
+    <p>No fim da semana, você conversa com a equipe e escolhe a trilha das duas semanas seguintes.</p>
+  </section>
+
+  <section>
+    <h2>Semanas 2 e 3: trilha Founder</h2>
+    <p>Para quem quer descobrir um problema que vale resolver e testar se ele vira um negócio.</p>
+    <ul>
+      <li>Mais conversas com possíveis usuários e escolha de um problema e de um público.</li>
+      <li>Um protótipo nas mãos de pessoas de fora, feito com um colega da trilha Developer.</li>
+      <li>Um compromisso real de alguém que quer usar, uma conta simples de quanto custa e quanto cobraria, e uma apresentação de 3 minutos.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Semanas 2 e 3: trilha Developer</h2>
+    <p>Para quem quer construir o produto com apoio de IA e entender como ele funciona por dentro.</p>
+    <ul>
+      <li>Um aplicativo com login, banco de dados e uma função de IA, no ar.</li>
+      <li>O que pedir à IA e como conferir o que ela entrega: passos pequenos, testes e revisão de segurança.</li>
+      <li>Uma lista de checagem de segurança e uma demonstração em que você explica cada decisão do seu código.</li>
+    </ul>
+    <p class="muted">Nas duas trilhas, toda semana tem uma entrega prática, e o que conta é conseguir explicar o que você fez.</p>
+  </section>
+
+  <section>
+    <h2>Depois do intensivo: estágio ou projeto próprio</h2>
+    <div class="panel"><h3>Estágio em uma empresa parceira</h3>
+      <p>Os participantes que mais se destacarem no intensivo recebem convite para estágio na ${PARTNERS}. A escolha considera as entregas das três semanas, a trilha e o interesse de cada um.</p></div>
+    <div class="panel"><h3>Projeto próprio</h3>
+      <p>Quem preferir pode, em vez do estágio, desenvolver um projeto próprio em grupo de 2 ou 3 pessoas, com mentoria da equipe.</p></div>
+    <p class="muted small">O estágio segue a Lei do Estágio (Lei nº 11.788/2008): é preciso ter pelo menos 16 anos, estar matriculado na escola e assinar um termo de compromisso com a escola e, para menores de 18 anos, com o responsável. Carga horária e demais condições são combinadas com cada empresa.</p>
+  </section>
+
+  <section id="acesso">
+    <h2>Como acessar o portal</h2>
+    <ol class="steps">
+      <li>Abra <a href="/entrar">${portalHost}</a> no celular ou no computador. Os dois funcionam.</li>
+      <li>Em <strong>E-mail</strong>, digite o mesmo e-mail que você usou na inscrição da olimpíada.</li>
+      <li>Em <strong>Senha</strong>, no primeiro acesso, digite o seu WhatsApp com DDD, só os números. Exemplo: 11987654321.</li>
+      <li>Clique em <strong>Entrar</strong>. O portal vai pedir a sua <strong>data de nascimento</strong>, a mesma da inscrição. Isso confirma que é você, porque outras pessoas podem conhecer o seu telefone.</li>
+      <li>Crie uma <strong>senha nova</strong>, com pelo menos 8 caracteres, e repita. A partir daí, você entra sempre com o e-mail e essa senha.</li>
+      <li>Leia o <strong>aviso de privacidade</strong>, marque a caixa de ciência e clique em <strong>Salvar senha e continuar</strong>.</li>
+      <li>Na tela de início, clique em <strong>Começar</strong>.</li>
+      <li>O formulário tem <strong>${F.SECTIONS.length} partes</strong>. Suas respostas são salvas enquanto você escreve, e você pode parar e continuar depois de onde parou.</li>
+      <li>Na parte <strong>Founder ou Developer?</strong>, responda o que combina com você hoje. Não é uma escolha definitiva.</li>
+      <li>No fim, em <strong>Revisar e enviar</strong>, confira tudo e clique em <strong>Enviar formulário</strong>. Até o prazo, você ainda pode voltar e editar.</li>
+    </ol>
+    ${p ? '' : html`<a class="btn" href="/entrar">Entrar no portal</a>`}
+  </section>
+
+  <section>
+    <h2>Se algo der errado</h2>
+    <ul>
+      <li><strong>O portal diz que e-mail ou senha não conferem:</strong> confira se usou o e-mail da inscrição e o WhatsApp só com números, com DDD e sem o +55.</li>
+      <li><strong>A data de nascimento não confere:</strong> pode haver erro no cadastro. Fale com a equipe, que corrige.</li>
+      <li><strong>Esqueceu a senha:</strong> clique em <strong>Esqueci minha senha</strong> e fale com a equipe. O acesso é redefinido e você cria uma senha nova.</li>
+      <li><strong>Errou a senha muitas vezes:</strong> o acesso fica bloqueado por 15 minutos. Espere e tente de novo.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Perguntas frequentes</h2>
+    <dl class="faq">
+      <dt>Preciso saber programar?</dt><dd>Não. A trilha Developer começa do zero, e a trilha Founder não exige código.</dd>
+      <dt>O formulário elimina alguém?</dt><dd>Não. Ele serve para conhecer você e planejar. A seleção acontece em dezembro, com os desafios.</dd>
+      <dt>Posso escolher entre o estágio e o projeto próprio?</dt><dd>Sim. Quem receber o convite de estágio pode preferir o projeto próprio, e quem não for convidado pode seguir com o projeto.</dd>
+      <dt>Tenho menos de 18 anos.</dt><dd>Converse com seu responsável antes de responder. Para participar do intensivo, ele vai assinar um termo. Para o estágio, a lei exige pelo menos 16 anos.</dd>
+      <dt>Quanto tempo leva o formulário?</dt><dd>De 15 a 20 minutos. Escreva de forma simples, com exemplos reais.</dd>
+      <dt>É presencial?</dt><dd>Os encontros são ao vivo. Formato e horários serão definidos depois das respostas, e o formulário pergunta o que é viável para você.</dd>
+      <dt>Posso usar IA para escrever as respostas?</dt><dd>Pode usar para revisar o texto, mas não invente experiências e não cole dados pessoais em ferramentas externas.</dd>
+    </dl>
+  </section>
+
+  ${settings.program_contact ? html`<div class="panel"><h2>Dúvidas</h2><p>Fale com a equipe: ${settings.program_contact}</p></div>` : ''}
+</main>`,
   });
 }
 
@@ -136,10 +252,10 @@ function homePage({ p, resp, progress, settings, msg, isMinor }) {
       <li><strong>Intensivo de 3 semanas</strong>, com encontros ao vivo e prática. As datas ainda estão sendo definidas com base nas respostas de vocês.</li>
       <li><strong>Trilha Founder:</strong> descobrir um problema real, conversar com pessoas e testar se ele vira um negócio.</li>
       <li><strong>Trilha Developer:</strong> construir um produto com apoio de IA, do zero até colocar no ar com segurança. Não precisa saber programar.</li>
-      <li><strong>Depois do intensivo</strong>, os participantes formam grupos para desenvolver projetos próprios, com mentoria.</li>
-      <li><strong>Estágio e pesquisa</strong> continuam como caminhos possíveis para quem preferir.</li>
+      <li><strong>Depois do intensivo</strong>, quem mais se destacar recebe convite para estágio na ${PARTNERS}. Quem preferir pode seguir com um projeto próprio, em grupo e com mentoria.</li>
     </ul>
     <p class="muted small">As vagas do intensivo são limitadas. Depois do formulário, em dezembro, haverá uma seleção com desafios curtos, que avaliam empenho e forma de pensar, não experiência prévia. Condições e datas são confirmadas com cada participante.</p>
+    <a class="btn secondary" href="/como-funciona">Ver como funciona, passo a passo</a>
   </div>
   <div class="panel"><h2>Grupo do programa</h2>
     ${settings.whatsapp_link
@@ -292,4 +408,4 @@ function myDataPage({ p, msg, error }) {
   });
 }
 
-module.exports = { loginPage, forgotPage, firstAccessPage, homePage, sectionPage, reviewPage, myDataPage, privacyText };
+module.exports = { loginPage, forgotPage, firstAccessPage, homePage, programPage, sectionPage, reviewPage, myDataPage, privacyText };
