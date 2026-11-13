@@ -149,7 +149,7 @@ function programPage({ settings, p, portalHost }) {
       <dt>Posso fazer o estágio e também um projeto próprio?</dt><dd>Sim. Uma coisa não exclui a outra. O projeto próprio é aberto a quem quiser, receba ou não o convite de estágio, e pode receber investimento.</dd>
       <dt>Tenho menos de 18 anos.</dt><dd>Converse com seu responsável antes de responder. Para participar do intensivo, ele vai assinar um termo. Para o estágio, a lei exige pelo menos 16 anos.</dd>
       <dt>Quanto tempo leva o formulário?</dt><dd>De 15 a 20 minutos. Escreva de forma simples, com exemplos reais.</dd>
-      <dt>É presencial?</dt><dd>Os encontros são ao vivo. Formato e horários serão definidos depois das respostas, e o formulário pergunta o que é viável para você.</dd>
+      <dt>É presencial?</dt><dd>Os encontros são ao vivo. Formato e horários serão confirmados com os selecionados, e o formulário pergunta sua disponibilidade de horários.</dd>
       <dt>Posso usar IA para escrever as respostas?</dt><dd>Pode usar para revisar o texto, mas não invente experiências e não cole dados pessoais em ferramentas externas.</dd>
     </dl>
   </section>

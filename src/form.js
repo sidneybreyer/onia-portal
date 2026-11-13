@@ -213,13 +213,6 @@ const SECTIONS = [
         placeholder: 'Ex.: segundas e quartas, das 14h às 17h',
       },
       {
-        key: 'formatos', type: 'checkbox', required: true,
-        label: 'Quais formatos seriam viáveis para você?',
-        help: 'Ninguém precisa mudar de cidade.',
-        options: ['Remoto', 'Presencial na minha cidade ou região próxima', 'Híbrido na minha cidade ou região próxima', 'Ainda preciso combinar'],
-        exclusive: 'Ainda preciso combinar',
-      },
-      {
         key: 'computador', type: 'radio', required: true,
         label: 'Como é seu acesso a um computador para estudar e desenvolver projetos?',
         help: 'Serve para planejar apoio. Não é uma avaliação.',
@@ -229,7 +222,7 @@ const SECTIONS = [
         key: 'apoio', type: 'checkbox', required: false,
         label: 'Que apoio ajudaria você a participar?',
         help: 'Marque o que fizer sentido. Não informe renda, diagnósticos ou detalhes pessoais sensíveis.',
-        options: ['Acesso à internet', 'Empréstimo de equipamento', 'Acesso a ferramentas e infraestrutura', 'Auxílio para deslocamento, caso haja atividades presenciais', 'Ajustes de agenda por causa dos estudos ou outros compromissos', 'Orientação técnica para começar', 'Gostaria de conversar em particular sobre uma adaptação ou apoio', 'Não identifico uma necessidade adicional agora'],
+        options: ['Acesso à internet', 'Empréstimo de equipamento', 'Acesso a ferramentas e infraestrutura', 'Ajustes de agenda por causa dos estudos ou outros compromissos', 'Orientação técnica para começar', 'Gostaria de conversar em particular sobre uma adaptação ou apoio', 'Não identifico uma necessidade adicional agora'],
         exclusive: 'Não identifico uma necessidade adicional agora',
       },
       {
